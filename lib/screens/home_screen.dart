@@ -3,6 +3,7 @@ import 'software_base_screen.dart';
 import 'archive_screen.dart';
 import 'solve_engine_screen.dart';
 import 'vault_screen.dart';
+import 'resource_finder_screen.dart';
 import '../widgets/custom_card.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -64,190 +65,205 @@ class HomeContent extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Welcome Header
-            const Text(
-              'Welcome back, Samir!',
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-            ),
-            const Text(
-              'ID: 0802410205101088 | CSE Dept.',
-              style: TextStyle(color: Colors.grey),
-            ),
+            _buildPremiumHeader(),
             const SizedBox(height: 24),
 
-            // Search Bar
-            TextField(
-              decoration: InputDecoration(
-                hintText: 'Search notes, questions, software...',
-                prefixIcon: const Icon(Icons.search),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide.none,
-                ),
-                filled: true,
-                fillColor: Colors.grey[200],
-              ),
-            ),
-            const SizedBox(height: 24),
-
-            // Core Pillars Section
+            // Main Pillars
             const Text(
-              'Academic Pillars',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              'Explore Academic Pillars',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF1A237E)),
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 16),
             GridView.count(
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
               crossAxisCount: 2,
               crossAxisSpacing: 16,
               mainAxisSpacing: 16,
-              childAspectRatio: 1.3,
+              childAspectRatio: 1.1,
               children: [
-                _buildPillarCard(
+                _buildMainActionCard(
                   context,
-                  'The Archive',
-                  Icons.folder_copy_outlined,
-                  Colors.blue.shade700,
-                  'Notes & Questions',
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => const ArchiveScreen()),
-                    );
-                  },
-                ),
-                _buildPillarCard(
-                  context,
-                  'Solve Engine',
-                  Icons.psychology_outlined,
+                  'Total Question',
+                  'CT, Mid, Semester',
+                  Icons.quiz_rounded,
                   Colors.orange.shade800,
-                  'Verified Solutions',
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => const SolveEngineScreen()),
-                    );
-                  },
+                  () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ResourceFinderScreen(category: 'Question'))),
                 ),
-                _buildPillarCard(
+                _buildMainActionCard(
                   context,
-                  'Lab Infra',
-                  Icons.terminal_outlined,
-                  Colors.green.shade700,
-                  'Software Base',
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => const SoftwareBaseScreen()),
-                    );
-                  },
+                  'My Study Vault',
+                  'Bookmarks & Saves',
+                  Icons.bookmarks_rounded,
+                  Colors.blue.shade800,
+                  () => Navigator.push(context, MaterialPageRoute(builder: (_) => const VaultScreen())),
                 ),
-                _buildPillarCard(
+                _buildMainActionCard(
                   context,
-                  'Verification',
-                  Icons.verified_user_outlined,
-                  Colors.purple.shade700,
-                  'CR Review Queue',
+                  'Lab Materials',
+                  'Software & Lab Info',
+                  Icons.terminal_rounded,
+                  Colors.green.shade800,
+                  () => Navigator.push(context, MaterialPageRoute(builder: (_) => const SoftwareBaseScreen())),
+                ),
+                _buildMainActionCard(
+                  context,
+                  'Academic Notes',
+                  'Class, CT, Final Notes',
+                  Icons.menu_book_rounded,
+                  Colors.purple.shade800,
+                  () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ResourceFinderScreen(category: 'Note'))),
                 ),
               ],
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 32),
 
-            // Departments Section
-            const Row(
+            // Enhanced Departments Section
+            Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
-                  'Departments',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                const Text(
+                  'Academic Departments',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF1A237E)),
                 ),
-                TextButton(onPressed: null, child: Text('View All')),
+                TextButton(onPressed: () {}, child: const Text('Search All')),
               ],
             ),
-            SizedBox(
-              height: 100,
-              child: ListView(
-                scrollDirection: Axis.horizontal,
-                children: [
-                  _buildDeptIcon('CSE', Icons.computer),
-                  _buildDeptIcon('EEE', Icons.bolt),
-                  _buildDeptIcon('ME', Icons.settings),
-                  _buildDeptIcon('CE', Icons.apartment),
-                  _buildDeptIcon('BBA', Icons.business_center),
-                ],
-              ),
-            ),
+            const SizedBox(height: 12),
+            _buildDepartmentGrid(context),
             
-            const SizedBox(height: 24),
-            // Recent Verified Content
+            const SizedBox(height: 32),
+            // Verified Highlights
             const Text(
-              'Recent Verified Notes',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              'Verified Solutions Feed',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF1A237E)),
             ),
             const SizedBox(height: 12),
             _buildRecentItem(
-              'CSE 3101: Operating Systems',
-              'Verified by CR - 2 hours ago',
-              Icons.description_outlined,
+              'CSE-3121: Final Question Solve',
+              'Batch: 8th | Verified by Faculty',
+              Icons.check_circle_outline,
             ),
             _buildRecentItem(
-              'EEE 2205: Electrical Machines',
-              'Verified by Faculty - 5 hours ago',
+              'EEE-2205: Midterm Notes',
+              'Batch: 9th | Verified by CR',
               Icons.description_outlined,
             ),
           ],
         ),
       ),
-      floatingActionButton: FloatingActionButton(
+      floatingActionButton: FloatingActionButton.extended(
         onPressed: () {},
         backgroundColor: const Color(0xFF1A237E),
-        foregroundColor: Colors.white,
-        tooltip: 'Upload Resource',
-        child: const Icon(Icons.add),
+        label: const Text('Upload'),
+        icon: const Icon(Icons.cloud_upload_outlined),
       ),
     );
   }
 
-  Widget _buildPillarCard(BuildContext context, String title, IconData icon, Color color, String subtitle, {VoidCallback? onTap}) {
-    return StudyHubCard(
-      onTap: onTap,
-      color: color.withOpacity(0.05),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisAlignment: MainAxisAlignment.center,
+  Widget _buildPremiumHeader() {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [const Color(0xFF1A237E), Colors.indigo.shade400],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(color: Colors.indigo.withOpacity(0.3), blurRadius: 12, offset: const Offset(0, 6)),
+        ],
+      ),
+      child: Row(
         children: [
-          Icon(icon, color: color, size: 32),
-          const SizedBox(height: 12),
-          Text(
-            title,
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-              fontSize: 16,
-              color: color,
+          const CircleAvatar(
+            radius: 30,
+            backgroundColor: Colors.white24,
+            child: Icon(Icons.person, color: Colors.white, size: 35),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text('Hello, Samir!', style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)),
+                Text('ID: 0802410205101088', style: TextStyle(color: Colors.white.withOpacity(0.8), fontSize: 13)),
+                const SizedBox(height: 4),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                  decoration: BoxDecoration(color: Colors.white.withOpacity(0.2), borderRadius: BorderRadius.circular(10)),
+                  child: const Text('Dept: CSE | L-3 T-I', style: TextStyle(color: Colors.white, fontSize: 10)),
+                ),
+              ],
             ),
           ),
-          Text(
-            subtitle,
-            style: TextStyle(fontSize: 11, color: color.withOpacity(0.8)),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMainActionCard(BuildContext context, String title, String sub, IconData icon, Color color, VoidCallback onTap) {
+    return StudyHubCard(
+      onTap: onTap,
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(color: color.withOpacity(0.1), borderRadius: BorderRadius.circular(10)),
+            child: Icon(icon, color: color, size: 28),
+          ),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+              const SizedBox(height: 2),
+              Text(sub, style: TextStyle(fontSize: 10, color: Colors.grey.shade600)),
+            ],
           ),
         ],
       ),
     );
   }
 
-  Widget _buildDeptIcon(String label, IconData icon) {
-    return Padding(
-      padding: const EdgeInsets.only(right: 16.0),
-      child: Column(
-        children: [
-          CircleAvatar(
-            radius: 30,
-            backgroundColor: Colors.indigo.shade50,
-            child: Icon(icon, color: Colors.indigo),
-          ),
-          const SizedBox(height: 4),
-          Text(label, style: const TextStyle(fontSize: 12)),
-        ],
+  Widget _buildDepartmentGrid(BuildContext context) {
+    final depts = [
+      {'name': 'CSE', 'icon': Icons.computer_rounded},
+      {'name': 'EEE', 'icon': Icons.bolt_rounded},
+      {'name': 'ME', 'icon': Icons.settings_applications_rounded},
+      {'name': 'CE', 'icon': Icons.architecture_rounded},
+      {'name': 'BBA', 'icon': Icons.business_center_rounded},
+      {'name': 'IPE', 'icon': Icons.precision_manufacturing_rounded},
+      {'name': 'English', 'icon': Icons.translate_rounded},
+    ];
+
+    return SizedBox(
+      height: 90,
+      child: ListView.builder(
+        scrollDirection: Axis.horizontal,
+        itemCount: depts.length,
+        itemBuilder: (context, index) {
+          return GestureDetector(
+            onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => ResourceFinderScreen(category: depts[index]['name'] as String))),
+            child: Padding(
+              padding: const EdgeInsets.only(right: 16.0),
+              child: Column(
+                children: [
+                  CircleAvatar(
+                    radius: 28,
+                    backgroundColor: const Color(0xFF1A237E).withOpacity(0.05),
+                    child: Icon(depts[index]['icon'] as IconData, color: const Color(0xFF1A237E)),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(depts[index]['name'] as String, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w500)),
+                ],
+              ),
+            ),
+          );
+        },
       ),
     );
   }
@@ -262,15 +278,12 @@ class HomeContent extends StatelessWidget {
           contentPadding: EdgeInsets.zero,
           leading: Container(
             padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: Colors.blue.shade50,
-              borderRadius: BorderRadius.circular(8),
-            ),
+            decoration: BoxDecoration(color: Colors.blue.shade50, borderRadius: BorderRadius.circular(8)),
             child: Icon(icon, color: Colors.blue),
           ),
-          title: Text(title, style: const TextStyle(fontWeight: FontWeight.w600)),
-          subtitle: Text(status, style: const TextStyle(fontSize: 12)),
-          trailing: const Icon(Icons.chevron_right, size: 20),
+          title: Text(title, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
+          subtitle: Text(status, style: const TextStyle(fontSize: 11)),
+          trailing: const Icon(Icons.arrow_forward_ios, size: 14),
         ),
       ),
     );
