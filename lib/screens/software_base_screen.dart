@@ -1,22 +1,45 @@
 import 'package:flutter/material.dart';
 import '../widgets/custom_card.dart';
 
-class SoftwareBaseScreen extends StatelessWidget {
+class SoftwareBaseScreen extends StatefulWidget {
   const SoftwareBaseScreen({super.key});
+
+  @override
+  State<SoftwareBaseScreen> createState() => _SoftwareBaseScreenState();
+}
+
+class _SoftwareBaseScreenState extends State<SoftwareBaseScreen> {
+  String searchQuery = '';
+  String selectedLab = 'All Labs';
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Software Base'),
-        actions: [
-          IconButton(onPressed: () {}, icon: const Icon(Icons.help_outline)),
-        ],
+        title: const Text('Lab Toolbox'),
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(70),
+          child: Padding(
+            padding: const EdgeInsets.all(12.0),
+            child: TextField(
+              onChanged: (v) => setState(() => searchQuery = v),
+              decoration: InputDecoration(
+                hintText: 'Search software or lab name...',
+                prefixIcon: const Icon(Icons.search, color: Colors.white),
+                filled: true,
+                fillColor: Colors.white.withOpacity(0.1),
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(30), borderSide: BorderSide.none),
+                hintStyle: const TextStyle(color: Colors.white70),
+              ),
+              style: const TextStyle(color: Colors.white),
+            ),
+          ),
+        ),
       ),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          _buildInfoBanner(),
+          _buildLabFilter(),
           const SizedBox(height: 20),
           _buildSoftwareItem(
             'CSE 1st Year Starter Pack',
@@ -32,54 +55,30 @@ class SoftwareBaseScreen extends StatelessWidget {
             Icons.memory_rounded,
             Colors.orange,
           ),
-          _buildSoftwareItem(
-            'Cisco Packet Tracer',
-            'Network Simulation tool for Data Communication labs.',
-            '200 MB',
-            Icons.router_rounded,
-            Colors.green,
-          ),
-          _buildSoftwareItem(
-            'AutoCAD 2024 (Student Edition)',
-            'Standard engineering drawing software for ME/CE.',
-            '2.5 GB',
-            Icons.architecture_rounded,
-            Colors.red,
-          ),
         ],
       ),
     );
   }
 
-  Widget _buildInfoBanner() {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [const Color(0xFF1A237E), Colors.indigo.shade400],
-        ),
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: const Row(
-        children: [
-          Icon(Icons.terminal, color: Colors.white, size: 40),
-          SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Lab Readiness',
-                  style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18),
-                ),
-                Text(
-                  'Optimized ZIP archives for BAUST lab computers.',
-                  style: TextStyle(color: Colors.white70, fontSize: 12),
-                ),
-              ],
+  Widget _buildLabFilter() {
+    final labs = ['All Labs', 'Programming', 'Electronics', 'Machine Shop', 'Circuits'];
+    return SizedBox(
+      height: 40,
+      child: ListView(
+        scrollDirection: Axis.horizontal,
+        children: labs.map((lab) {
+          final isSelected = selectedLab == lab;
+          return Padding(
+            padding: const EdgeInsets.only(right: 8),
+            child: FilterChip(
+              label: Text(lab, style: TextStyle(color: isSelected ? Colors.white : Colors.black, fontSize: 12)),
+              selected: isSelected,
+              onSelected: (val) => setState(() => selectedLab = lab),
+              selectedColor: const Color(0xFF1A237E),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
             ),
-          ),
-        ],
+          );
+        }).toList(),
       ),
     );
   }
