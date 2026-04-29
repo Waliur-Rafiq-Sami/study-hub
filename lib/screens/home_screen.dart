@@ -5,6 +5,9 @@ import 'solve_engine_screen.dart';
 import 'vault_screen.dart';
 import 'resource_finder_screen.dart';
 import 'department_detail_screen.dart';
+import 'upload_resource_screen.dart';
+import 'verified_solutions_screen.dart';
+import 'settings_screen.dart';
 import '../widgets/custom_card.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -21,7 +24,7 @@ class _HomeScreenState extends State<HomeScreen> {
     const HomeContent(),
     const VaultScreen(),
     const SoftwareBaseScreen(),
-    const Center(child: Text('Settings / More Coming Soon')),
+    const SettingsScreen(),
   ];
 
   @override
@@ -204,9 +207,21 @@ class HomeContent extends StatelessWidget {
             
             const SizedBox(height: 32),
             // Verified Highlights
-            const Text(
-              'Verified Solutions Feed',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF1A237E)),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text(
+                  'Verified Solutions Feed',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF1A237E)),
+                ),
+                TextButton(
+                  onPressed: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const VerifiedSolutionsScreen()),
+                  ),
+                  child: const Text('View All'),
+                ),
+              ],
             ),
             const SizedBox(height: 12),
             _buildRecentItem(
@@ -223,10 +238,14 @@ class HomeContent extends StatelessWidget {
         ),
       ),
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: () {},
+        onPressed: () => Navigator.push(
+          context,
+          MaterialPageRoute(builder: (_) => const UploadResourceScreen()),
+        ),
         backgroundColor: const Color(0xFF1A237E),
-        label: const Text('Upload'),
-        icon: const Icon(Icons.cloud_upload_outlined),
+        label: const Text('Upload', style: TextStyle(fontWeight: FontWeight.bold)),
+        icon: const Icon(Icons.cloud_upload_rounded),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       ),
     );
   }

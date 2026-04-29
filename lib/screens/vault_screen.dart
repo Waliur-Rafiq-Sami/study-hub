@@ -26,22 +26,31 @@ class _VaultScreenState extends State<VaultScreen> with SingleTickerProviderStat
         title: const Text('My Study Vault'),
         centerTitle: true,
         bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(60),
+          preferredSize: const Size.fromHeight(70),
           child: Container(
-            margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            margin: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+            padding: const EdgeInsets.all(4),
             decoration: BoxDecoration(
-              color: Colors.black.withOpacity(0.05),
-              borderRadius: BorderRadius.circular(15),
+              color: Colors.white.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(30),
             ),
             child: TabBar(
               controller: _tabController,
               indicator: BoxDecoration(
-                borderRadius: BorderRadius.circular(12),
-                color: const Color(0xFF1A237E),
+                borderRadius: BorderRadius.circular(26),
+                color: Colors.white,
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.1),
+                    blurRadius: 4,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
               ),
-              labelColor: Colors.white,
-              unselectedLabelColor: const Color(0xFF1A237E).withOpacity(0.6),
-              labelStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+              labelColor: const Color(0xFF1A237E),
+              unselectedLabelColor: Colors.white.withOpacity(0.9),
+              labelStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 11, letterSpacing: 0.5),
+              unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.w500, fontSize: 11),
               indicatorSize: TabBarIndicatorSize.tab,
               tabs: const [
                 Tab(text: 'QUESTIONS'),
