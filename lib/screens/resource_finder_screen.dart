@@ -5,8 +5,9 @@ import 'resource_details_screen.dart';
 
 class ResourceFinderScreen extends StatefulWidget {
   final String category; // 'Question', 'Note', 'Lab'
+  final String? initialDept;
 
-  const ResourceFinderScreen({super.key, required this.category});
+  const ResourceFinderScreen({super.key, required this.category, this.initialDept});
 
   @override
   State<ResourceFinderScreen> createState() => _ResourceFinderScreenState();
@@ -19,6 +20,12 @@ class _ResourceFinderScreenState extends State<ResourceFinderScreen> {
   String? selectedBatch;
   String? selectedType; // CT, Mid, Semester
   Subject? selectedSubject;
+
+  @override
+  void initState() {
+    super.initState();
+    selectedDept = widget.initialDept;
+  }
 
   final List<Map<String, dynamic>> departments = [
     {'name': 'CSE', 'icon': Icons.computer},
@@ -128,7 +135,7 @@ class _ResourceFinderScreenState extends State<ResourceFinderScreen> {
 
   Widget _buildDepartmentSelector() {
     return SizedBox(
-      height: 90,
+      height: 110,
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
         itemCount: departments.length,
@@ -136,29 +143,44 @@ class _ResourceFinderScreenState extends State<ResourceFinderScreen> {
           final dept = departments[index];
           final isSelected = selectedDept == dept['name'];
           return Padding(
-            padding: const EdgeInsets.only(right: 12),
+            padding: const EdgeInsets.only(right: 16),
             child: GestureDetector(
               onTap: () => setState(() => selectedDept = dept['name'] as String),
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 200),
-                width: 70,
-                decoration: BoxDecoration(
-                  color: isSelected ? const Color(0xFF1A237E) : Colors.white,
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: isSelected ? const Color(0xFF1A237E) : Colors.grey.shade300),
-                  boxShadow: isSelected ? [BoxShadow(color: const Color(0xFF1A237E).withOpacity(0.3), blurRadius: 8, offset: const Offset(0, 4))] : null,
-                ),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(dept['icon'] as IconData, color: isSelected ? Colors.white : const Color(0xFF1A237E), size: 28),
-                    const SizedBox(height: 4),
-                    Text(
-                      dept['name'] as String,
-                      style: TextStyle(color: isSelected ? Colors.white : Colors.black, fontSize: 11, fontWeight: FontWeight.bold),
+              child: Column(
+                children: [
+                  AnimatedContainer(
+                    duration: const Duration(milliseconds: 300),
+                    width: 70,
+                    height: 70,
+                    decoration: BoxDecoration(
+                      color: isSelected ? const Color(0xFF1A237E) : Colors.white,
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: isSelected ? const Color(0xFF1A237E) : Colors.grey.shade300,
+                        width: 2,
+                      ),
+                      boxShadow: isSelected 
+                          ? [BoxShadow(color: const Color(0xFF1A237E).withOpacity(0.4), blurRadius: 10, offset: const Offset(0, 5))]
+                          : [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 5, offset: const Offset(0, 2))],
                     ),
-                  ],
-                ),
+                    child: Center(
+                      child: Icon(
+                        dept['icon'] as IconData,
+                        color: isSelected ? Colors.white : const Color(0xFF1A237E),
+                        size: 30,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    dept['name'] as String,
+                    style: TextStyle(
+                      color: isSelected ? const Color(0xFF1A237E) : Colors.black87,
+                      fontSize: 12,
+                      fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                    ),
+                  ),
+                ],
               ),
             ),
           );

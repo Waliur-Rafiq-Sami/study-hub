@@ -4,6 +4,7 @@ import 'archive_screen.dart';
 import 'solve_engine_screen.dart';
 import 'vault_screen.dart';
 import 'resource_finder_screen.dart';
+import 'department_detail_screen.dart';
 import '../widgets/custom_card.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -231,34 +232,63 @@ class HomeContent extends StatelessWidget {
 
   Widget _buildDepartmentGrid(BuildContext context) {
     final depts = [
-      {'name': 'CSE', 'icon': Icons.computer_rounded},
-      {'name': 'EEE', 'icon': Icons.bolt_rounded},
-      {'name': 'ME', 'icon': Icons.settings_applications_rounded},
-      {'name': 'CE', 'icon': Icons.architecture_rounded},
-      {'name': 'BBA', 'icon': Icons.business_center_rounded},
-      {'name': 'IPE', 'icon': Icons.precision_manufacturing_rounded},
-      {'name': 'English', 'icon': Icons.translate_rounded},
+      {'name': 'CSE', 'icon': Icons.computer_rounded, 'color': Colors.blue},
+      {'name': 'EEE', 'icon': Icons.bolt_rounded, 'color': Colors.orange},
+      {'name': 'ME', 'icon': Icons.settings_applications_rounded, 'color': Colors.red},
+      {'name': 'CE', 'icon': Icons.architecture_rounded, 'color': Colors.brown},
+      {'name': 'BBA', 'icon': Icons.business_center_rounded, 'color': Colors.green},
+      {'name': 'IPE', 'icon': Icons.precision_manufacturing_rounded, 'color': Colors.teal},
+      {'name': 'English', 'icon': Icons.translate_rounded, 'color': Colors.purple},
     ];
 
     return SizedBox(
-      height: 90,
+      height: 100,
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
         itemCount: depts.length,
         itemBuilder: (context, index) {
-          return GestureDetector(
-            onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => ResourceFinderScreen(category: depts[index]['name'] as String))),
-            child: Padding(
-              padding: const EdgeInsets.only(right: 16.0),
+          final dept = depts[index];
+          final deptColor = dept['color'] as Color;
+          return Padding(
+            padding: const EdgeInsets.only(right: 20),
+            child: GestureDetector(
+              onTap: () => Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => DepartmentDetailScreen(
+                    departmentName: dept['name'] as String,
+                    icon: dept['icon'] as IconData,
+                  ),
+                ),
+              ),
               child: Column(
                 children: [
-                  CircleAvatar(
-                    radius: 28,
-                    backgroundColor: const Color(0xFF1A237E).withOpacity(0.05),
-                    child: Icon(depts[index]['icon'] as IconData, color: const Color(0xFF1A237E)),
+                  Container(
+                    width: 64,
+                    height: 64,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(
+                          color: deptColor.withOpacity(0.15),
+                          blurRadius: 10,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
+                      border: Border.all(color: deptColor.withOpacity(0.1), width: 1.5),
+                    ),
+                    child: Icon(dept['icon'] as IconData, color: deptColor, size: 30),
                   ),
-                  const SizedBox(height: 4),
-                  Text(depts[index]['name'] as String, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w500)),
+                  const SizedBox(height: 8),
+                  Text(
+                    dept['name'] as String,
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.blueGrey.shade800,
+                    ),
+                  ),
                 ],
               ),
             ),
