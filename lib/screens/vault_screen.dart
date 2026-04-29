@@ -1,45 +1,225 @@
 import 'package:flutter/material.dart';
 import '../widgets/custom_card.dart';
+import 'resource_details_screen.dart';
 
-class VaultScreen extends StatelessWidget {
+class VaultScreen extends StatefulWidget {
   const VaultScreen({super.key});
+
+  @override
+  State<VaultScreen> createState() => _VaultScreenState();
+}
+
+class _VaultScreenState extends State<VaultScreen> with SingleTickerProviderStateMixin {
+  late TabController _tabController;
+
+  @override
+  void initState() {
+    super.initState();
+    _tabController = TabController(length: 3, vsync: this);
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('My Personal Vault')),
-      body: ListView(
-        padding: const EdgeInsets.all(16),
-        children: [
-          const Text(
-            'Saved for Study',
-            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+      backgroundColor: const Color(0xFFF8F9FE),
+      appBar: AppBar(
+        title: const Text('My Study Vault'),
+        centerTitle: true,
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(60),
+          child: Container(
+            margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            decoration: BoxDecoration(
+              color: Colors.black.withOpacity(0.05),
+              borderRadius: BorderRadius.circular(15),
+            ),
+            child: TabBar(
+              controller: _tabController,
+              indicator: BoxDecoration(
+                borderRadius: BorderRadius.circular(12),
+                color: const Color(0xFF1A237E),
+              ),
+              labelColor: Colors.white,
+              unselectedLabelColor: const Color(0xFF1A237E).withOpacity(0.6),
+              labelStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+              indicatorSize: TabBarIndicatorSize.tab,
+              tabs: const [
+                Tab(text: 'QUESTIONS'),
+                Tab(text: 'SOLVES'),
+                Tab(text: 'LAB TOOLS'),
+              ],
+            ),
           ),
-          const Text('Access your bookmarked resources offline.', style: TextStyle(color: Colors.grey)),
-          const SizedBox(height: 20),
-          _buildVaultItem('OS Memory Management.pdf', 'The Archive', Icons.picture_as_pdf),
-          _buildVaultItem('MinGW Configuration.md', 'Lab Infra', Icons.description),
-          _buildVaultItem('Algorithms 2023 Solved.pdf', 'Solve Engine', Icons.verified),
+        ),
+      ),
+      body: TabBarView(
+        controller: _tabController,
+        children: [
+          _buildVaultList('Question'),
+          _buildVaultList('Solve'),
+          _buildVaultList('Lab'),
         ],
       ),
     );
   }
 
-  Widget _buildVaultItem(String title, String source, IconData icon) {
+  Widget _buildVaultList(String category) {
+    // Mock data based on category
+    final items = _getMockItems(category);
+
+    if (items.isEmpty) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.bookmark_border_rounded, size: 64, color: Colors.grey.shade300),
+            const SizedBox(height: 16),
+            Text('No $category items saved yet', 
+                 style: TextStyle(color: Colors.grey.shade500, fontWeight: FontWeight.w500)),
+          ],
+        ),
+      );
+    }
+
+    return ListView.builder(
+      padding: const EdgeInsets.all(20),
+      itemCount: items.length,
+      itemBuilder: (context, index) {
+        final item = items[index];
+        return _buildProfessionalVaultCard(item);
+      },
+    );
+  }
+
+  Widget _buildProfessionalVaultCard(Map<String, dynamic> item) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.only(bottom: 16),
       child: StudyHubCard(
-        child: ListTile(
-          contentPadding: EdgeInsets.zero,
-          leading: Icon(icon, color: const Color(0xFF1A237E), size: 30),
-          title: Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
-          subtitle: Text('Source: $source', style: const TextStyle(fontSize: 12)),
-          trailing: IconButton(
-            icon: const Icon(Icons.delete_outline, color: Colors.redAccent),
-            onPressed: () {},
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => ResourceDetailsScreen(
+                title: item['title'],
+                code: item['code'],
+                category: item['type'],
+              ),
+            ),
+          );
+        },
+        padding: EdgeInsets.zero,
+        child: IntrinsicHeight(
+          child: Row(
+            children: [
+              Container(
+                width: 6,
+                decoration: BoxDecoration(
+                  color: _getCategoryColor(item['type']),
+                  borderRadius: const BorderRadius.only(
+                    topLeft: Radius.circular(16),
+                    bottomLeft: Radius.circular(16),
+                  ),
+                ),
+              ),
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          color: _getCategoryColor(item['type']).withOpacity(0.08),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Icon(
+                          _getCategoryIcon(item['type']),
+                          color: _getCategoryColor(item['type']),
+                          size: 24,
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              item['title'],
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 15,
+                                color: Color(0xFF2D3142),
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              '${item['code']} • ${item['info']}',
+                              style: TextStyle(
+                                fontSize: 11,
+                                color: Colors.blueGrey.shade300,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      IconButton(
+                        onPressed: () {
+                          // TODO: Implement unsave logic
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('Removed from Vault'), duration: Duration(seconds: 1)),
+                          );
+                        },
+                        icon: const Icon(Icons.remove_circle_outline_rounded, color: Colors.redAccent, size: 20),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
           ),
         ),
       ),
     );
+  }
+
+  Color _getCategoryColor(String type) {
+    switch (type) {
+      case 'Question': return Colors.orange.shade700;
+      case 'Solve': return Colors.green.shade700;
+      case 'Lab': return Colors.blue.shade700;
+      default: return const Color(0xFF1A237E);
+    }
+  }
+
+  IconData _getCategoryIcon(String type) {
+    switch (type) {
+      case 'Question': return Icons.quiz_outlined;
+      case 'Solve': return Icons.verified_outlined;
+      case 'Lab': return Icons.terminal_outlined;
+      default: return Icons.description_outlined;
+    }
+  }
+
+  List<Map<String, dynamic>> _getMockItems(String category) {
+    if (category == 'Question') {
+      return [
+        {'title': 'Operating Systems Final Q', 'code': 'CSE-3101', 'info': 'Winter 2024', 'type': 'Question'},
+        {'title': 'Database Midterm Q', 'code': 'CSE-3121', 'info': 'Summer 2023', 'type': 'Question'},
+        {'title': 'Algorithms CT 2', 'code': 'CSE-2201', 'info': 'Batch 8th', 'type': 'Question'},
+      ];
+    } else if (category == 'Solve') {
+      return [
+        {'title': 'OS Final Verified Solve', 'code': 'CSE-3101', 'info': 'By Prof. X', 'type': 'Solve'},
+        {'title': 'Math 2101 Calculus Solve', 'code': 'MATH-2101', 'info': 'By CR', 'type': 'Solve'},
+      ];
+    } else {
+      return [
+        {'title': 'VS Code Starter Pack', 'code': 'IDE-Config', 'info': 'Setup Guide', 'type': 'Lab'},
+        {'title': 'Proteus 8.15 ZIP', 'code': 'EEE-Lab', 'info': 'Required for L-2', 'type': 'Lab'},
+      ];
+    }
   }
 }
