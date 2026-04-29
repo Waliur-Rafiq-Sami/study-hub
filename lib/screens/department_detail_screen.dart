@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../widgets/custom_card.dart';
-import 'resource_finder_screen.dart';
+import 'resource_list_screen.dart';
 
 class DepartmentDetailScreen extends StatelessWidget {
   final String departmentName;
@@ -108,23 +108,23 @@ class DepartmentDetailScreen extends StatelessWidget {
       mainAxisSpacing: 16,
       childAspectRatio: 1.4,
       children: [
-        _buildActionCard(context, 'CT Questions', Icons.quiz_outlined, Colors.orange, 'Bank & Solves'),
-        _buildActionCard(context, 'Midterm', Icons.assignment_outlined, Colors.blue, 'Previous Papers'),
-        _buildActionCard(context, 'Semester Final', Icons.school_outlined, Colors.purple, 'Archives'),
-        _buildActionCard(context, 'Verified Solves', Icons.verified_outlined, Colors.green, 'Step-by-step'),
+        _buildActionCard(context, 'CT Questions', Icons.quiz_outlined, Colors.orange, 'Bank & Solves', 'CT'),
+        _buildActionCard(context, 'Midterm', Icons.assignment_outlined, Colors.blue, 'Previous Papers', 'Midterm'),
+        _buildActionCard(context, 'Semester Final', Icons.school_outlined, Colors.purple, 'Archives', 'Final'),
+        _buildActionCard(context, 'Verified Solves', Icons.verified_outlined, Colors.green, 'Step-by-step', 'Solve'),
       ],
     );
   }
 
-  Widget _buildActionCard(BuildContext context, String title, IconData icon, Color color, String sub) {
+  Widget _buildActionCard(BuildContext context, String title, IconData icon, Color color, String sub, String category) {
     return StudyHubCard(
       onTap: () {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (_) => ResourceFinderScreen(
-              category: 'Question',
-              initialDept: departmentName,
+            builder: (_) => ResourceListScreen(
+              department: departmentName,
+              category: category,
             ),
           ),
         );
@@ -152,6 +152,7 @@ class DepartmentDetailScreen extends StatelessWidget {
           'Standard formatting & sample reports.',
           Icons.description_outlined,
           Colors.blueGrey,
+          'Lab',
         ),
         _buildListTile(
           context,
@@ -159,6 +160,7 @@ class DepartmentDetailScreen extends StatelessWidget {
           'Official $departmentName Lab Handouts.',
           Icons.menu_book_outlined,
           Colors.indigo,
+          'Lab',
         ),
         _buildListTile(
           context,
@@ -166,12 +168,13 @@ class DepartmentDetailScreen extends StatelessWidget {
           'Setup tools & required IDEs.',
           Icons.terminal_outlined,
           Colors.teal,
+          'Lab',
         ),
       ],
     );
   }
 
-  Widget _buildListTile(BuildContext context, String title, String sub, IconData icon, Color color) {
+  Widget _buildListTile(BuildContext context, String title, String sub, IconData icon, Color color, String category) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: StudyHubCard(
@@ -179,9 +182,9 @@ class DepartmentDetailScreen extends StatelessWidget {
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (_) => ResourceFinderScreen(
-                category: title.contains('Software') ? 'Software' : 'Lab',
-                initialDept: departmentName,
+              builder: (_) => ResourceListScreen(
+                department: departmentName,
+                category: category,
               ),
             ),
           );

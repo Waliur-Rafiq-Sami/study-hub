@@ -75,10 +75,12 @@ class _ResourceListScreenState extends State<ResourceListScreen> {
                     onSelected: (val) => setState(() => selectedType = type),
                     selectedColor: Colors.amber,
                     labelStyle: TextStyle(
-                      color: isSelected ? Colors.black : Colors.white,
+                      color: isSelected ? Colors.black : Colors.black87,
                       fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
                     ),
-                    backgroundColor: Colors.white24,
+                    backgroundColor: Colors.white,
+                    side: BorderSide.none,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
                   ),
                 );
               }).toList(),
@@ -105,16 +107,16 @@ class _ResourceListScreenState extends State<ResourceListScreen> {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12),
         decoration: BoxDecoration(
-          color: Colors.white24,
+          color: Colors.white,
           borderRadius: BorderRadius.circular(8),
         ),
         child: DropdownButtonHideUnderline(
           child: DropdownButton<String>(
             value: items[0],
             isExpanded: true,
-            dropdownColor: const Color(0xFF1A237E),
-            icon: const Icon(Icons.arrow_drop_down, color: Colors.white),
-            style: const TextStyle(color: Colors.white, fontSize: 13),
+            dropdownColor: Colors.white,
+            icon: const Icon(Icons.arrow_drop_down, color: Color(0xFF1A237E)),
+            style: const TextStyle(color: Colors.black87, fontSize: 13),
             items: items.map((String value) {
               return DropdownMenuItem<String>(
                 value: value,
@@ -169,7 +171,7 @@ class _ResourceListScreenState extends State<ResourceListScreen> {
                   const SizedBox(height: 4),
                   const Text(
                     'Batch: 8th | L-3, T-I | Winter 2024',
-                    style: TextStyle(fontSize: 11, color: Colors.grey),
+                    style: TextStyle(fontSize: 11, color: Colors.black54),
                   ),
                 ],
               ),
