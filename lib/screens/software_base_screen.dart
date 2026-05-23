@@ -71,11 +71,15 @@ class _SoftwareBaseScreenState extends State<SoftwareBaseScreen> {
           return Padding(
             padding: const EdgeInsets.only(right: 8),
             child: FilterChip(
-              label: Text(lab, style: TextStyle(color: isSelected ? Colors.white : Colors.black, fontSize: 12)),
+              label: Text(lab, style: TextStyle(color: isSelected ? Colors.white : Theme.of(context).colorScheme.onSurface, fontSize: 12)),
               selected: isSelected,
               onSelected: (val) => setState(() => selectedLab = lab),
-              selectedColor: const Color(0xFF1A237E),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+              selectedColor: Theme.of(context).primaryColor,
+              backgroundColor: Theme.of(context).cardColor,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+                side: BorderSide(color: Theme.of(context).dividerColor.withOpacity(0.1)),
+              ),
             ),
           );
         }).toList(),
@@ -105,22 +109,22 @@ class _SoftwareBaseScreenState extends State<SoftwareBaseScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-                      Text(desc, style: const TextStyle(color: Colors.grey, fontSize: 12)),
+                      Text(title, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Theme.of(context).colorScheme.onSurface)),
+                      Text(desc, style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6), fontSize: 12)),
                     ],
                   ),
                 ),
               ],
             ),
-            const Divider(height: 24),
+            Divider(height: 24, color: Theme.of(context).dividerColor.withOpacity(0.1)),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Row(
                   children: [
-                    const Icon(Icons.storage, size: 14, color: Colors.grey),
+                    Icon(Icons.storage, size: 14, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.4)),
                     const SizedBox(width: 4),
-                    Text(size, style: const TextStyle(color: Colors.grey, fontWeight: FontWeight.w500)),
+                    Text(size, style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withOpacity(0.4), fontWeight: FontWeight.w500)),
                   ],
                 ),
                 ElevatedButton.icon(
@@ -128,7 +132,7 @@ class _SoftwareBaseScreenState extends State<SoftwareBaseScreen> {
                   icon: const Icon(Icons.download_for_offline_rounded, size: 18),
                   label: const Text('Download ZIP'),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF1A237E),
+                    backgroundColor: Theme.of(context).primaryColor,
                     foregroundColor: Colors.white,
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                   ),

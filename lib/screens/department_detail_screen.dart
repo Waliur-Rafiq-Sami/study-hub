@@ -15,7 +15,6 @@ class DepartmentDetailScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey[50],
       appBar: AppBar(
         title: Text('$departmentName Hub'),
         actions: [
@@ -27,36 +26,36 @@ class DepartmentDetailScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildDeptHeader(),
+            _buildDeptHeader(context),
             const SizedBox(height: 32),
             
-            _buildSectionTitle('Examination & Solves'),
+            _buildSectionTitle(context, 'Examination & Solves'),
             const SizedBox(height: 12),
             _buildExamGrid(context),
             
             const SizedBox(height: 32),
-            _buildSectionTitle('Laboratory Infrastructure'),
+            _buildSectionTitle(context, 'Laboratory Infrastructure'),
             const SizedBox(height: 12),
             _buildLabResources(context),
             
             const SizedBox(height: 32),
-            _buildSectionTitle('Department Quick Links'),
+            _buildSectionTitle(context, 'Department Quick Links'),
             const SizedBox(height: 12),
-            _buildQuickLinks(),
+            _buildQuickLinks(context),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildDeptHeader() {
+  Widget _buildDeptHeader(BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: const Color(0xFF1A237E),
+        color: Theme.of(context).primaryColor,
         borderRadius: BorderRadius.circular(24),
         boxShadow: [
-          BoxShadow(color: const Color(0xFF1A237E).withOpacity(0.3), blurRadius: 15, offset: const Offset(0, 8)),
+          BoxShadow(color: Theme.of(context).primaryColor.withOpacity(0.3), blurRadius: 15, offset: const Offset(0, 8)),
         ],
       ),
       child: Row(
@@ -92,10 +91,10 @@ class DepartmentDetailScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildSectionTitle(String title) {
+  Widget _buildSectionTitle(BuildContext context, String title) {
     return Text(
       title,
-      style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF1A237E)),
+      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Theme.of(context).primaryColor),
     );
   }
 
@@ -136,8 +135,8 @@ class DepartmentDetailScreen extends StatelessWidget {
         children: [
           Icon(icon, color: color, size: 28),
           const SizedBox(height: 8),
-          Text(title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
-          Text(sub, style: TextStyle(fontSize: 10, color: Colors.grey.shade600)),
+          Text(title, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Theme.of(context).colorScheme.onSurface)),
+          Text(sub, style: TextStyle(fontSize: 10, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6))),
         ],
       ),
     );
@@ -197,37 +196,38 @@ class DepartmentDetailScreen extends StatelessWidget {
             decoration: BoxDecoration(color: color.withOpacity(0.1), borderRadius: BorderRadius.circular(12)),
             child: Icon(icon, color: color),
           ),
-          title: Text(title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
-          subtitle: Text(sub, style: const TextStyle(fontSize: 12)),
-          trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+          title: Text(title, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: Theme.of(context).colorScheme.onSurface)),
+          subtitle: Text(sub, style: TextStyle(fontSize: 12, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6))),
+          trailing: Icon(Icons.arrow_forward_ios, size: 16, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.3)),
         ),
       ),
     );
   }
 
-  Widget _buildQuickLinks() {
+  Widget _buildQuickLinks(BuildContext context) {
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
       child: Row(
         children: [
-          _buildChip('Routine'),
-          _buildChip('Syllabus'),
-          _buildChip('Faculty Info'),
-          _buildChip('Notices'),
+          _buildChip(context, 'Routine'),
+          _buildChip(context, 'Syllabus'),
+          _buildChip(context, 'Faculty Info'),
+          _buildChip(context, 'Notices'),
         ],
       ),
     );
   }
 
-  Widget _buildChip(String label) {
+  Widget _buildChip(BuildContext context, String label) {
     return Padding(
       padding: const EdgeInsets.only(right: 8),
       child: ActionChip(
         label: Text(label),
         onPressed: () {},
-        backgroundColor: Colors.white,
-        side: BorderSide(color: Colors.grey.shade300),
+        backgroundColor: Theme.of(context).cardColor,
+        side: BorderSide(color: Theme.of(context).dividerColor.withOpacity(0.1)),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        labelStyle: TextStyle(color: Theme.of(context).colorScheme.onSurface),
       ),
     );
   }

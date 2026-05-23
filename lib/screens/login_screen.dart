@@ -25,20 +25,24 @@ class _LoginScreenState extends State<LoginScreen> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 const SizedBox(height: 40),
-                // Logo or Icon
-                const Icon(
-                  Icons.school_rounded,
-                  size: 80,
-                  color: Color(0xFF1A237E),
+                // BAUST Logo
+                Image.asset(
+                  'web/baust_logo.png',
+                  height: 120,
+                  errorBuilder: (context, error, stackTrace) => const Icon(
+                    Icons.school_rounded,
+                    size: 80,
+                    color: Color(0xFF1A237E),
+                  ),
                 ),
                 const SizedBox(height: 16),
-                const Text(
+                Text(
                   'StudyHub BAUST',
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     fontSize: 28,
                     fontWeight: FontWeight.bold,
-                    color: Color(0xFF1A237E),
+                    color: Theme.of(context).primaryColor,
                   ),
                 ),
                 const Text(
@@ -50,12 +54,19 @@ class _LoginScreenState extends State<LoginScreen> {
 
                 // Email Field
                 TextFormField(
+                  style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
                   decoration: InputDecoration(
                     labelText: 'University Email',
+                    labelStyle: TextStyle(color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6)),
                     hintText: 'e.g. 08024... @baust.edu.bd',
-                    prefixIcon: const Icon(Icons.email_outlined),
+                    hintStyle: TextStyle(color: Theme.of(context).colorScheme.onSurface.withOpacity(0.4)),
+                    prefixIcon: Icon(Icons.email_outlined, color: Theme.of(context).primaryColor),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide(color: Theme.of(context).dividerColor.withOpacity(0.1)),
                     ),
                   ),
                   keyboardType: TextInputType.emailAddress,
@@ -69,12 +80,15 @@ class _LoginScreenState extends State<LoginScreen> {
                 // Password Field
                 TextFormField(
                   obscureText: _obscurePassword,
+                  style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
                   decoration: InputDecoration(
                     labelText: 'Password',
-                    prefixIcon: const Icon(Icons.lock_outline),
+                    labelStyle: TextStyle(color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6)),
+                    prefixIcon: Icon(Icons.lock_outline, color: Theme.of(context).primaryColor),
                     suffixIcon: IconButton(
                       icon: Icon(
                         _obscurePassword ? Icons.visibility_off : Icons.visibility,
+                        color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
                       ),
                       onPressed: () {
                         setState(() {
@@ -84,6 +98,10 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide(color: Theme.of(context).dividerColor.withOpacity(0.1)),
                     ),
                   ),
                   validator: (value) {
@@ -115,7 +133,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     }
                   },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF1A237E),
+                    backgroundColor: Theme.of(context).primaryColor,
                     foregroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     shape: RoundedRectangleBorder(

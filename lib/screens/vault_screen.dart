@@ -21,7 +21,6 @@ class _VaultScreenState extends State<VaultScreen> with SingleTickerProviderStat
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F9FE),
       appBar: AppBar(
         title: const Text('My Study Vault'),
         centerTitle: true,
@@ -38,17 +37,22 @@ class _VaultScreenState extends State<VaultScreen> with SingleTickerProviderStat
               controller: _tabController,
               indicator: BoxDecoration(
                 borderRadius: BorderRadius.circular(26),
-                color: Colors.white,
+                color: Theme.of(context).brightness == Brightness.dark 
+                    ? Colors.white.withOpacity(0.2) 
+                    : Colors.white,
                 boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.1),
-                    blurRadius: 4,
-                    offset: const Offset(0, 2),
-                  ),
+                  if (Theme.of(context).brightness == Brightness.light)
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.1),
+                      blurRadius: 4,
+                      offset: const Offset(0, 2),
+                    ),
                 ],
               ),
-              labelColor: const Color(0xFF1A237E),
-              unselectedLabelColor: Colors.white.withOpacity(0.9),
+              labelColor: Theme.of(context).brightness == Brightness.dark 
+                  ? Colors.white 
+                  : Theme.of(context).primaryColor,
+              unselectedLabelColor: Colors.white.withOpacity(0.6),
               labelStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 11, letterSpacing: 0.5),
               unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.w500, fontSize: 11),
               indicatorSize: TabBarIndicatorSize.tab,
@@ -81,10 +85,10 @@ class _VaultScreenState extends State<VaultScreen> with SingleTickerProviderStat
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.bookmark_border_rounded, size: 64, color: Colors.grey.shade300),
+            Icon(Icons.bookmark_border_rounded, size: 64, color: Theme.of(context).disabledColor),
             const SizedBox(height: 16),
             Text('No $category items saved yet', 
-                 style: TextStyle(color: Colors.grey.shade500, fontWeight: FontWeight.w500)),
+                 style: TextStyle(color: Theme.of(context).disabledColor, fontWeight: FontWeight.w500)),
           ],
         ),
       );
@@ -154,10 +158,10 @@ class _VaultScreenState extends State<VaultScreen> with SingleTickerProviderStat
                           children: [
                             Text(
                               item['title'],
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontWeight: FontWeight.bold,
                                 fontSize: 15,
-                                color: Color(0xFF2D3142),
+                                color: Theme.of(context).colorScheme.onSurface,
                               ),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
@@ -167,7 +171,7 @@ class _VaultScreenState extends State<VaultScreen> with SingleTickerProviderStat
                               '${item['code']} • ${item['info']}',
                               style: TextStyle(
                                 fontSize: 11,
-                                color: Colors.blueGrey.shade300,
+                                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
                                 fontWeight: FontWeight.w500,
                               ),
                             ),

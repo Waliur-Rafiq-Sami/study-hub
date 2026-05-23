@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../widgets/custom_card.dart';
 import 'login_screen.dart';
+import '../services/theme_manager.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -10,13 +11,11 @@ class SettingsScreen extends StatefulWidget {
 }
 
 class _SettingsScreenState extends State<SettingsScreen> {
-  bool isDarkMode = false;
   bool isNotificationsEnabled = true;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F9FE),
       appBar: AppBar(
         title: const Text('Account & Settings'),
         centerTitle: true,
@@ -39,7 +38,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
             _buildSectionHeader('APP PREFERENCES'),
             _buildSettingsGroup([
               _buildSwitchItem(Icons.notifications_active_outlined, 'Notifications', isNotificationsEnabled, (v) => setState(() => isNotificationsEnabled = v)),
-              _buildSwitchItem(Icons.dark_mode_outlined, 'Dark Theme', isDarkMode, (v) => setState(() => isDarkMode = v)),
+              _buildSwitchItem(
+                Icons.dark_mode_outlined, 
+                'Dark Theme', 
+                themeManager.isDarkMode, 
+                (v) => themeManager.toggleTheme(v)
+              ),
               _buildSettingItem(Icons.language_outlined, 'App Language', 'English', () => _showActionFeedback('Language Selection Coming Soon')),
             ]),
             
@@ -78,7 +82,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 20, offset: const Offset(0, 10)),
@@ -112,8 +116,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text('Waliur Rafiq Samir', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                Text('ID: 0802410205101088', style: TextStyle(color: Colors.grey.shade600, fontSize: 13)),
+                Text('Waliur Rafiq Samir', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.onSurface)),
+                Text('ID: 0802410205101088', style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6), fontSize: 13)),
                 const SizedBox(height: 4),
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
@@ -144,7 +148,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Widget _buildSettingsGroup(List<Widget> children) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 15, offset: const Offset(0, 5)),

@@ -21,7 +21,6 @@ class _UploadResourceScreenState extends State<UploadResourceScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F9FE),
       appBar: AppBar(
         title: const Text('Upload Academic Asset'),
         centerTitle: true,
@@ -38,6 +37,7 @@ class _UploadResourceScreenState extends State<UploadResourceScreen> {
               
               _buildLabel('Resource Title'),
               TextFormField(
+                style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
                 decoration: _inputDecoration('e.g. Operating Systems Final Solve', Icons.title),
                 validator: (v) => v!.isEmpty ? 'Required' : null,
               ),
@@ -58,15 +58,14 @@ class _UploadResourceScreenState extends State<UploadResourceScreen> {
               _buildLabel('Attach Document (PDF/Image)'),
               StudyHubCard(
                 onTap: () {},
-                color: Colors.white,
                 padding: const EdgeInsets.symmetric(vertical: 40),
                 child: Center(
                   child: Column(
                     children: [
-                      Icon(Icons.cloud_upload_outlined, size: 48, color: const Color(0xFF1A237E).withOpacity(0.5)),
+                      Icon(Icons.cloud_upload_outlined, size: 48, color: Theme.of(context).primaryColor.withOpacity(0.5)),
                       const SizedBox(height: 12),
-                      const Text('Tap to select file', style: TextStyle(fontWeight: FontWeight.bold)),
-                      const Text('Maximum size: 20MB', style: TextStyle(fontSize: 12, color: Colors.grey)),
+                      Text('Tap to select file', style: TextStyle(fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.onSurface)),
+                      Text('Maximum size: 20MB', style: TextStyle(fontSize: 12, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5))),
                     ],
                   ),
                 ),
@@ -119,13 +118,15 @@ class _UploadResourceScreenState extends State<UploadResourceScreen> {
   Widget _buildLabel(String text) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 8, left: 4),
-      child: Text(text, style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF1A237E))),
+      child: Text(text, style: TextStyle(fontWeight: FontWeight.bold, color: Theme.of(context).primaryColor)),
     );
   }
 
   Widget _buildDropdown(String label, List<String> items, String? value, Function(String?) onChanged) {
     return DropdownButtonFormField<String>(
       value: value,
+      dropdownColor: Theme.of(context).cardColor,
+      style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
       decoration: _inputDecoration(label, null),
       items: items.map((e) => DropdownMenuItem(value: e, child: Text(e, style: const TextStyle(fontSize: 14)))).toList(),
       onChanged: onChanged,
@@ -135,9 +136,10 @@ class _UploadResourceScreenState extends State<UploadResourceScreen> {
   InputDecoration _inputDecoration(String hint, IconData? icon) {
     return InputDecoration(
       hintText: hint,
-      prefixIcon: icon != null ? Icon(icon, size: 20) : null,
+      hintStyle: TextStyle(color: Theme.of(context).colorScheme.onSurface.withOpacity(0.4)),
+      prefixIcon: icon != null ? Icon(icon, size: 20, color: Theme.of(context).primaryColor) : null,
       filled: true,
-      fillColor: Colors.white,
+      fillColor: Theme.of(context).cardColor,
       border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
       enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),

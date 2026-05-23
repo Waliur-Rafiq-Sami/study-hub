@@ -33,7 +33,6 @@ class _ResourceListScreenState extends State<ResourceListScreen> {
     }
 
     return Scaffold(
-      backgroundColor: Colors.grey[50],
       appBar: AppBar(
         title: Text('${widget.department} ${widget.category}s'),
         elevation: 0,
@@ -57,7 +56,7 @@ class _ResourceListScreenState extends State<ResourceListScreen> {
 
   Widget _buildFilterHeader(List<String> subTypes) {
     return Container(
-      color: const Color(0xFF1A237E),
+      color: Theme.of(context).primaryColor,
       padding: const EdgeInsets.only(bottom: 16),
       child: Column(
         children: [
@@ -75,10 +74,10 @@ class _ResourceListScreenState extends State<ResourceListScreen> {
                     onSelected: (val) => setState(() => selectedType = type),
                     selectedColor: Colors.amber,
                     labelStyle: TextStyle(
-                      color: isSelected ? Colors.black : Colors.black87,
+                      color: isSelected ? Colors.black : Theme.of(context).colorScheme.onSurface,
                       fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
                     ),
-                    backgroundColor: Colors.white,
+                    backgroundColor: Theme.of(context).cardColor,
                     side: BorderSide.none,
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
                   ),
@@ -107,16 +106,16 @@ class _ResourceListScreenState extends State<ResourceListScreen> {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: Theme.of(context).cardColor,
           borderRadius: BorderRadius.circular(8),
         ),
         child: DropdownButtonHideUnderline(
           child: DropdownButton<String>(
             value: items[0],
             isExpanded: true,
-            dropdownColor: Colors.white,
-            icon: const Icon(Icons.arrow_drop_down, color: Color(0xFF1A237E)),
-            style: const TextStyle(color: Colors.black87, fontSize: 13),
+            dropdownColor: Theme.of(context).cardColor,
+            icon: Icon(Icons.arrow_drop_down, color: Theme.of(context).primaryColor),
+            style: TextStyle(color: Theme.of(context).colorScheme.onSurface, fontSize: 13),
             items: items.map((String value) {
               return DropdownMenuItem<String>(
                 value: value,
@@ -148,17 +147,17 @@ class _ResourceListScreenState extends State<ResourceListScreen> {
         },
         child: Row(
           children: [
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: const Color(0xFF1A237E).withOpacity(0.05),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Icon(
-                widget.category == 'Lab' ? Icons.terminal : Icons.description_outlined,
-                color: const Color(0xFF1A237E),
-              ),
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: Theme.of(context).primaryColor.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(12),
             ),
+            child: Icon(
+              widget.category == 'Lab' ? Icons.terminal : Icons.description_outlined,
+              color: Theme.of(context).primaryColor,
+            ),
+          ),
             const SizedBox(width: 16),
             Expanded(
               child: Column(
@@ -166,12 +165,12 @@ class _ResourceListScreenState extends State<ResourceListScreen> {
                 children: [
                   Text(
                     '${widget.category} Question - Set A',
-                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: Theme.of(context).colorScheme.onSurface),
                   ),
                   const SizedBox(height: 4),
-                  const Text(
+                  Text(
                     'Batch: 8th | L-3, T-I | Winter 2024',
-                    style: TextStyle(fontSize: 11, color: Colors.black54),
+                    style: TextStyle(fontSize: 11, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6)),
                   ),
                 ],
               ),

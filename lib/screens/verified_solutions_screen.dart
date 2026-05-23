@@ -16,7 +16,6 @@ class _VerifiedSolutionsScreenState extends State<VerifiedSolutionsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F9FE),
       appBar: AppBar(
         title: const Text('Verified Solutions'),
         centerTitle: true,
@@ -131,7 +130,11 @@ class _VerifiedSolutionsScreenState extends State<VerifiedSolutionsScreen> {
                 children: [
                   Text(
                     '${subjects[index % 4]}: ${titles[index % 4]}',
-                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Color(0xFF2D3142)),
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 14,
+                      color: Theme.of(context).colorScheme.onSurface,
+                    ),
                   ),
                   const SizedBox(height: 4),
                   Row(

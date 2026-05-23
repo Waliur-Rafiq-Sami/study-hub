@@ -108,8 +108,8 @@ class _ResourceFinderScreenState extends State<ResourceFinderScreen> {
                   }
                 },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF1A237E),
-                  foregroundColor: Colors.white,
+                  backgroundColor: Theme.of(context).primaryColor,
+                  foregroundColor: Theme.of(context).brightness == Brightness.dark ? Colors.black : Colors.white,
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                   elevation: 4,
                 ),
@@ -126,9 +126,9 @@ class _ResourceFinderScreenState extends State<ResourceFinderScreen> {
   Widget _buildSectionHeader(String title, IconData icon) {
     return Row(
       children: [
-        Icon(icon, size: 20, color: const Color(0xFF1A237E)),
+        Icon(icon, size: 20, color: Theme.of(context).primaryColor),
         const SizedBox(width: 8),
-        Text(title, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF1A237E))),
+        Text(title, style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Theme.of(context).primaryColor)),
       ],
     );
   }
@@ -153,20 +153,20 @@ class _ResourceFinderScreenState extends State<ResourceFinderScreen> {
                     width: 70,
                     height: 70,
                     decoration: BoxDecoration(
-                      color: isSelected ? const Color(0xFF1A237E) : Colors.white,
+                      color: isSelected ? Theme.of(context).primaryColor : Theme.of(context).cardColor,
                       shape: BoxShape.circle,
                       border: Border.all(
-                        color: isSelected ? const Color(0xFF1A237E) : Colors.grey.shade300,
+                        color: isSelected ? Theme.of(context).primaryColor : Theme.of(context).dividerColor.withOpacity(0.1),
                         width: 2,
                       ),
                       boxShadow: isSelected 
-                          ? [BoxShadow(color: const Color(0xFF1A237E).withOpacity(0.4), blurRadius: 10, offset: const Offset(0, 5))]
+                          ? [BoxShadow(color: Theme.of(context).primaryColor.withOpacity(0.4), blurRadius: 10, offset: const Offset(0, 5))]
                           : [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 5, offset: const Offset(0, 2))],
                     ),
                     child: Center(
                       child: Icon(
                         dept['icon'] as IconData,
-                        color: isSelected ? Colors.white : const Color(0xFF1A237E),
+                        color: isSelected ? Colors.white : Theme.of(context).primaryColor,
                         size: 30,
                       ),
                     ),
@@ -175,7 +175,7 @@ class _ResourceFinderScreenState extends State<ResourceFinderScreen> {
                   Text(
                     dept['name'] as String,
                     style: TextStyle(
-                      color: isSelected ? const Color(0xFF1A237E) : Colors.black87,
+                      color: isSelected ? Theme.of(context).primaryColor : Theme.of(context).colorScheme.onSurface,
                       fontSize: 12,
                       fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
                     ),
@@ -192,11 +192,13 @@ class _ResourceFinderScreenState extends State<ResourceFinderScreen> {
   Widget _buildDropdown(String label, List<String> items, String? value, Function(String?) onChanged) {
     return DropdownButtonFormField<String>(
       value: value,
+      dropdownColor: Theme.of(context).cardColor,
+      style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
       decoration: InputDecoration(
         labelText: label,
-        labelStyle: const TextStyle(fontSize: 14),
+        labelStyle: TextStyle(fontSize: 14, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6)),
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-        enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.grey.shade300)),
+        enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Theme.of(context).dividerColor.withOpacity(0.1))),
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       ),
       items: items.map((e) => DropdownMenuItem(value: e, child: Text(e))).toList(),
@@ -207,17 +209,16 @@ class _ResourceFinderScreenState extends State<ResourceFinderScreen> {
   Widget _buildSubjectSelector() {
     return StudyHubCard(
       padding: EdgeInsets.zero,
-      color: Colors.white,
       child: ListTile(
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         leading: Container(
           padding: const EdgeInsets.all(8),
-          decoration: BoxDecoration(color: const Color(0xFF1A237E).withOpacity(0.1), borderRadius: BorderRadius.circular(8)),
-          child: const Icon(Icons.class_outlined, color: Color(0xFF1A237E)),
+          decoration: BoxDecoration(color: Theme.of(context).primaryColor.withOpacity(0.1), borderRadius: BorderRadius.circular(8)),
+          child: Icon(Icons.class_outlined, color: Theme.of(context).primaryColor),
         ),
-        title: Text(selectedSubject?.title ?? 'Select Course', style: const TextStyle(fontWeight: FontWeight.bold)),
-        subtitle: Text(selectedSubject?.code ?? 'e.g. CSE-3121', style: const TextStyle(fontSize: 12)),
-        trailing: const Icon(Icons.keyboard_arrow_down_rounded),
+        title: Text(selectedSubject?.title ?? 'Select Course', style: TextStyle(fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.onSurface)),
+        subtitle: Text(selectedSubject?.code ?? 'e.g. CSE-3121', style: TextStyle(fontSize: 12, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6))),
+        trailing: Icon(Icons.keyboard_arrow_down_rounded, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.4)),
         onTap: () => _showSubjectPicker(),
       ),
     );
@@ -227,6 +228,7 @@ class _ResourceFinderScreenState extends State<ResourceFinderScreen> {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
       builder: (context) {
         return DraggableScrollableSheet(
@@ -242,11 +244,11 @@ class _ResourceFinderScreenState extends State<ResourceFinderScreen> {
                   width: 40,
                   height: 4,
                   margin: const EdgeInsets.symmetric(vertical: 12),
-                  decoration: BoxDecoration(color: Colors.grey[300], borderRadius: BorderRadius.circular(2)),
+                  decoration: BoxDecoration(color: Theme.of(context).dividerColor.withOpacity(0.1), borderRadius: BorderRadius.circular(2)),
                 ),
-                const Padding(
-                  padding: EdgeInsets.all(16.0),
-                  child: Text('Pick Academic Course', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Text('Pick Academic Course', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.onSurface)),
                 ),
                 Expanded(
                   child: ListView.builder(
@@ -257,12 +259,12 @@ class _ResourceFinderScreenState extends State<ResourceFinderScreen> {
                       return ListTile(
                         leading: Container(
                           padding: const EdgeInsets.all(8),
-                          decoration: BoxDecoration(color: Colors.grey[100], borderRadius: BorderRadius.circular(8)),
-                          child: Text(s.department, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 10)),
+                          decoration: BoxDecoration(color: Theme.of(context).cardColor, borderRadius: BorderRadius.circular(8)),
+                          child: Text(s.department, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 10, color: Theme.of(context).primaryColor)),
                         ),
-                        title: Text(s.title, style: const TextStyle(fontWeight: FontWeight.w600)),
-                        subtitle: Text(s.code),
-                        trailing: const Icon(Icons.add_circle_outline, size: 20, color: Color(0xFF1A237E)),
+                        title: Text(s.title, style: TextStyle(fontWeight: FontWeight.w600, color: Theme.of(context).colorScheme.onSurface)),
+                        subtitle: Text(s.code, style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6))),
+                        trailing: Icon(Icons.add_circle_outline, size: 20, color: Theme.of(context).primaryColor),
                         onTap: () {
                           setState(() => selectedSubject = s);
                           Navigator.pop(context);

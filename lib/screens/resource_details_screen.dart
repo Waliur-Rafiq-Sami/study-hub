@@ -26,13 +26,12 @@ class _ResourceDetailsScreenState extends State<ResourceDetailsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey[100],
       appBar: AppBar(
         title: Text(widget.code),
         actions: [
           IconButton(
             icon: Icon(isBookmarked ? Icons.bookmark : Icons.bookmark_border, 
-                 color: isBookmarked ? Colors.amber : Colors.white),
+                 color: isBookmarked ? Colors.amber : Theme.of(context).appBarTheme.foregroundColor),
             onPressed: () => setState(() => isBookmarked = !isBookmarked),
           ),
           IconButton(
@@ -55,20 +54,35 @@ class _ResourceDetailsScreenState extends State<ResourceDetailsScreen> {
                     return Container(
                       margin: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
-                        color: Colors.white,
+                        color: Theme.of(context).cardColor,
                         borderRadius: BorderRadius.circular(12),
-                        boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 10)],
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.05),
+                            blurRadius: 10,
+                          )
+                        ],
                       ),
                       child: Center(
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            const Icon(Icons.description, size: 100, color: Color(0xFF1A237E)),
+                            Icon(Icons.description, size: 100, color: Theme.of(context).primaryColor),
                             const SizedBox(height: 16),
-                            Text('Page ${index + 1} of $totalPages', 
-                                 style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
-                            const Text('Scan of Academic Question Paper', 
-                                 style: TextStyle(color: Colors.grey)),
+                            Text(
+                              'Page ${index + 1} of $totalPages', 
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold, 
+                                fontSize: 18,
+                                color: Theme.of(context).colorScheme.onSurface,
+                              ),
+                            ),
+                            Text(
+                              'Scan of Academic Question Paper', 
+                              style: TextStyle(
+                                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
+                              ),
+                            ),
                           ],
                         ),
                       ),
@@ -81,11 +95,11 @@ class _ResourceDetailsScreenState extends State<ResourceDetailsScreen> {
                   child: Container(
                     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                     decoration: BoxDecoration(
-                      color: Colors.black87,
+                      color: Theme.of(context).primaryColor.withOpacity(0.9),
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: Text('Page $currentPage / $totalPages', 
-                         style: const TextStyle(color: Colors.white, fontSize: 12)),
+                         style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold)),
                   ),
                 ),
               ],
@@ -95,15 +109,22 @@ class _ResourceDetailsScreenState extends State<ResourceDetailsScreen> {
           // Bottom Controls & Suggestions
           Container(
             padding: const EdgeInsets.symmetric(vertical: 20),
-            decoration: const BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.vertical(top: Radius.circular(30)),
+            decoration: BoxDecoration(
+              color: Theme.of(context).cardColor,
+              borderRadius: const BorderRadius.vertical(top: Radius.circular(30)),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(Theme.of(context).brightness == Brightness.dark ? 0.2 : 0.05),
+                  blurRadius: 10,
+                  offset: const Offset(0, -5),
+                )
+              ],
             ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
                 _buildActionButtons(),
-                const Divider(height: 32),
+                Divider(height: 32, color: Theme.of(context).dividerColor.withOpacity(0.1)),
                 _buildRelatedSection(),
               ],
             ),
@@ -124,8 +145,8 @@ class _ResourceDetailsScreenState extends State<ResourceDetailsScreen> {
               icon: const Icon(Icons.download_for_offline),
               label: const Text('DOWNLOAD ALL'),
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF1A237E),
-                foregroundColor: Colors.white,
+                backgroundColor: Theme.of(context).primaryColor,
+                foregroundColor: Theme.of(context).brightness == Brightness.dark ? Colors.black : Colors.white,
                 padding: const EdgeInsets.symmetric(vertical: 15),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
               ),
@@ -135,7 +156,11 @@ class _ResourceDetailsScreenState extends State<ResourceDetailsScreen> {
           IconButton.filledTonal(
             onPressed: () => _showInfoModal(context),
             icon: const Icon(Icons.info_outline),
-            style: IconButton.styleFrom(padding: const EdgeInsets.all(15)),
+            style: IconButton.styleFrom(
+              padding: const EdgeInsets.all(15),
+              backgroundColor: Theme.of(context).primaryColor.withOpacity(0.1),
+              foregroundColor: Theme.of(context).primaryColor,
+            ),
           ),
         ],
       ),
@@ -146,10 +171,10 @@ class _ResourceDetailsScreenState extends State<ResourceDetailsScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Padding(
-          padding: EdgeInsets.symmetric(horizontal: 20),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20),
           child: Text('Related Questions (Same Subject)', 
-               style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+               style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Theme.of(context).colorScheme.onSurface)),
         ),
         const SizedBox(height: 12),
         SizedBox(
@@ -176,12 +201,12 @@ class _ResourceDetailsScreenState extends State<ResourceDetailsScreen> {
       child: StudyHubCard(
         onTap: () {},
         padding: const EdgeInsets.all(12),
-        color: Colors.indigo.withOpacity(0.05),
+        color: Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.3),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text(session, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
-            Text(type, style: const TextStyle(fontSize: 10, color: Colors.blueGrey)),
+            Text(session, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: Theme.of(context).colorScheme.onSurface)),
+            Text(type, style: TextStyle(fontSize: 10, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6))),
           ],
         ),
       ),
@@ -191,7 +216,7 @@ class _ResourceDetailsScreenState extends State<ResourceDetailsScreen> {
   void _showQuickSelector(BuildContext context) {
     showModalBottomSheet(
       context: context,
-      backgroundColor: Colors.white,
+      backgroundColor: Theme.of(context).cardColor,
       shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(25))),
       builder: (context) {
         return Container(
@@ -199,7 +224,7 @@ class _ResourceDetailsScreenState extends State<ResourceDetailsScreen> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Text('Quick Switch Question', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+              Text('Quick Switch Question', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.onSurface)),
               const SizedBox(height: 20),
               Wrap(
                 spacing: 12,
@@ -225,13 +250,15 @@ class _ResourceDetailsScreenState extends State<ResourceDetailsScreen> {
       label: Text(label),
       selected: false,
       onSelected: (_) => Navigator.pop(context),
-      backgroundColor: Colors.grey[200],
+      backgroundColor: Theme.of(context).cardColor,
+      labelStyle: TextStyle(color: Theme.of(context).colorScheme.onSurface),
     );
   }
 
   void _showInfoModal(BuildContext context) {
     showModalBottomSheet(
       context: context,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(25))),
       builder: (context) {
         return Padding(
@@ -243,12 +270,12 @@ class _ResourceDetailsScreenState extends State<ResourceDetailsScreen> {
               Center(
                 child: Container(
                   width: 40, height: 4,
-                  decoration: BoxDecoration(color: Colors.grey, borderRadius: BorderRadius.circular(2)),
+                  decoration: BoxDecoration(color: Theme.of(context).dividerColor, borderRadius: BorderRadius.circular(2)),
                 ),
               ),
               const SizedBox(height: 24),
-              const Text('Asset Details', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-              const Divider(height: 32),
+              Text('Asset Details', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.onSurface)),
+              Divider(height: 32, color: Theme.of(context).dividerColor.withOpacity(0.1)),
               _buildInfoRow(Icons.calendar_today_outlined, 'Session', 'Winter 2024'),
               _buildInfoRow(Icons.person_outline, 'Uploaded By', 'Md. Waliur Rafiq Samir'),
               _buildInfoRow(Icons.check_circle_outline, 'Solve Status', 'Verified Solve Available', color: Colors.green),

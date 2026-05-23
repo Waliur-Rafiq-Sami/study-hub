@@ -8,7 +8,7 @@ import 'department_detail_screen.dart';
 import 'upload_resource_screen.dart';
 import 'verified_solutions_screen.dart';
 import 'settings_screen.dart';
-import 'notifications_screen.dart';
+import '../services/theme_manager.dart';
 import '../widgets/custom_card.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -34,6 +34,7 @@ class _HomeScreenState extends State<HomeScreen> {
       body: _pages[_selectedIndex],
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
+          color: Theme.of(context).cardColor,
           boxShadow: [
             BoxShadow(
               color: Colors.black.withOpacity(0.04),
@@ -50,8 +51,8 @@ class _HomeScreenState extends State<HomeScreen> {
             });
           },
           type: BottomNavigationBarType.fixed,
-          backgroundColor: Colors.white,
-          selectedItemColor: const Color(0xFF1A237E),
+          backgroundColor: Theme.of(context).cardColor,
+          selectedItemColor: Theme.of(context).primaryColor,
           unselectedItemColor: Colors.blueGrey.shade200,
           selectedLabelStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
           unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.w500, fontSize: 12),
@@ -73,19 +74,22 @@ class HomeContent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F9FE),
       appBar: AppBar(
         title: const Text('StudyHub BAUST'),
         actions: [
+          IconButton(
+            icon: Icon(
+              themeManager.isDarkMode ? Icons.light_mode_rounded : Icons.dark_mode_rounded,
+              color: Colors.white,
+            ),
+            onPressed: () => themeManager.toggleTheme(!themeManager.isDarkMode),
+          ),
           Stack(
             alignment: Alignment.center,
             children: [
               IconButton(
                 icon: const Icon(Icons.notifications_none_rounded),
-                onPressed: () => Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (_) => const NotificationsScreen()),
-                ),
+                onPressed: () => _showNotificationSheet(context),
               ),
               Positioned(
                 right: 12,
@@ -114,13 +118,13 @@ class HomeContent extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Welcome Header
-            _buildPremiumHeader(),
+            _buildPremiumHeader(context),
             const SizedBox(height: 24),
 
             // Search Bar
             Container(
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: Theme.of(context).cardColor,
                 borderRadius: BorderRadius.circular(16),
                 boxShadow: [
                   BoxShadow(
@@ -131,10 +135,11 @@ class HomeContent extends StatelessWidget {
                 ],
               ),
               child: TextField(
+                style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
                 decoration: InputDecoration(
                   hintText: 'Search notes, questions, software...',
                   hintStyle: TextStyle(color: Colors.grey.shade400, fontSize: 14),
-                  prefixIcon: const Icon(Icons.search_rounded, color: Color(0xFF1A237E), size: 22),
+                  prefixIcon: Icon(Icons.search_rounded, color: Theme.of(context).primaryColor, size: 22),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(16),
                     borderSide: BorderSide.none,
@@ -147,31 +152,18 @@ class HomeContent extends StatelessWidget {
 
             // Main Pillars
             Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Row(
-                  children: [
-                    Container(
-                      width: 4,
-                      height: 20,
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF1A237E),
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                    ),
-                    const SizedBox(width: 10),
-                    const Text(
-                      'Academic Pillars',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: Color(0xFF1A237E),
-                        letterSpacing: -0.5,
-                      ),
-                    ),
-                  ],
+                Icon(Icons.stars_rounded, color: Theme.of(context).primaryColor, size: 20),
+                const SizedBox(width: 10),
+                Text(
+                  'Academic Pillars',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Theme.of(context).primaryColor,
+                    letterSpacing: -0.5,
+                  ),
                 ),
-                Icon(Icons.more_horiz, color: Colors.grey.shade400),
               ],
             ),
             const SizedBox(height: 16),
@@ -223,9 +215,9 @@ class HomeContent extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text(
+                Text(
                   'Academic Departments',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF1A237E)),
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Theme.of(context).primaryColor),
                 ),
                 TextButton(onPressed: () {}, child: const Text('Search All')),
               ],
@@ -238,9 +230,9 @@ class HomeContent extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text(
+                Text(
                   'Verified Solutions Feed',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF1A237E)),
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Theme.of(context).primaryColor),
                 ),
                 TextButton(
                   onPressed: () => Navigator.push(
@@ -253,11 +245,13 @@ class HomeContent extends StatelessWidget {
             ),
             const SizedBox(height: 12),
             _buildRecentItem(
+              context,
               'CSE-3121: Final Question Solve',
               'Batch: 8th | Verified by Faculty',
               Icons.check_circle_outline,
             ),
             _buildRecentItem(
+              context,
               'EEE-2205: Midterm Notes',
               'Batch: 9th | Verified by CR',
               Icons.description_outlined,
@@ -314,26 +308,33 @@ class HomeContent extends StatelessWidget {
     );
   }
 
-  Widget _buildPremiumHeader() {
+  Widget _buildPremiumHeader(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [const Color(0xFF1A237E), Colors.indigo.shade400],
+          colors: isDark 
+              ? [Theme.of(context).primaryColor.withOpacity(0.8), Theme.of(context).cardColor]
+              : [const Color(0xFF1A237E), Colors.indigo.shade400],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
-          BoxShadow(color: Colors.indigo.withOpacity(0.3), blurRadius: 12, offset: const Offset(0, 6)),
+          BoxShadow(
+            color: Theme.of(context).primaryColor.withOpacity(isDark ? 0.1 : 0.3), 
+            blurRadius: 12, 
+            offset: const Offset(0, 6)
+          ),
         ],
       ),
       child: Row(
         children: [
-          const CircleAvatar(
+          CircleAvatar(
             radius: 30,
-            backgroundColor: Colors.white24,
-            child: Icon(Icons.person, color: Colors.white, size: 35),
+            backgroundColor: Colors.white.withOpacity(0.2),
+            child: const Icon(Icons.person, color: Colors.white, size: 35),
           ),
           const SizedBox(width: 16),
           Expanded(
@@ -357,13 +358,14 @@ class HomeContent extends StatelessWidget {
   }
 
   Widget _buildMainActionCard(BuildContext context, String title, String sub, IconData icon, Color color, VoidCallback onTap) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(
-            color: color.withOpacity(0.08),
+            color: isDark ? Colors.black.withOpacity(0.3) : color.withOpacity(0.08),
             blurRadius: 20,
             offset: const Offset(0, 10),
           ),
@@ -379,7 +381,11 @@ class HomeContent extends StatelessWidget {
               Positioned(
                 bottom: -20,
                 right: -20,
-                child: Icon(icon, size: 110, color: color.withOpacity(0.04)),
+                child: Icon(
+                  icon, 
+                  size: 110, 
+                  color: isDark ? Colors.white.withOpacity(0.02) : color.withOpacity(0.04)
+                ),
               ),
               Padding(
                 padding: const EdgeInsets.all(20),
@@ -392,7 +398,7 @@ class HomeContent extends StatelessWidget {
                         Container(
                           padding: const EdgeInsets.all(12),
                           decoration: BoxDecoration(
-                            color: color.withOpacity(0.1),
+                            color: color.withOpacity(isDark ? 0.2 : 0.1),
                             borderRadius: BorderRadius.circular(16),
                           ),
                           child: Icon(icon, color: color, size: 26),
@@ -401,19 +407,23 @@ class HomeContent extends StatelessWidget {
                           padding: const EdgeInsets.all(4),
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
-                            color: Colors.grey.shade50,
+                            color: Theme.of(context).dividerColor.withOpacity(0.05),
                           ),
-                          child: Icon(Icons.arrow_outward_rounded, size: 14, color: Colors.grey.shade400),
+                          child: Icon(
+                            Icons.arrow_outward_rounded, 
+                            size: 14, 
+                            color: Theme.of(context).colorScheme.onSurface.withOpacity(0.4)
+                          ),
                         ),
                       ],
                     ),
                     const Spacer(),
                     Text(
                       title,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontWeight: FontWeight.w700,
                         fontSize: 15,
-                        color: Color(0xFF2D3142),
+                        color: Theme.of(context).colorScheme.onSurface,
                       ),
                     ),
                     const SizedBox(height: 2),
@@ -422,7 +432,7 @@ class HomeContent extends StatelessWidget {
                       style: TextStyle(
                         fontSize: 10,
                         fontWeight: FontWeight.w500,
-                        color: Colors.blueGrey.shade300,
+                        color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
                       ),
                     ),
                   ],
@@ -472,7 +482,7 @@ class HomeContent extends StatelessWidget {
                     width: 64,
                     height: 64,
                     decoration: BoxDecoration(
-                      color: Colors.white,
+                      color: Theme.of(context).cardColor,
                       shape: BoxShape.circle,
                       boxShadow: [
                         BoxShadow(
@@ -491,7 +501,7 @@ class HomeContent extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.bold,
-                      color: Colors.blueGrey.shade800,
+                      color: Theme.of(context).colorScheme.onSurface,
                     ),
                   ),
                 ],
@@ -503,13 +513,138 @@ class HomeContent extends StatelessWidget {
     );
   }
 
-  Widget _buildRecentItem(String title, String status, IconData icon) {
+  void _showNotificationSheet(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setModalState) {
+            // Mock notification list
+            final List<Map<String, dynamic>> notifications = [
+              {'id': 1, 'title': 'Resource Verified!', 'desc': 'Your CSE-3101 Midterm Solve has been verified.', 'time': '1h ago', 'icon': Icons.verified_user, 'color': Colors.green},
+              {'id': 2, 'title': 'New Question', 'desc': 'Batch 10th Final Question for EEE-2205 is now available.', 'time': '3h ago', 'icon': Icons.auto_stories, 'color': Colors.blue},
+              {'id': 3, 'title': 'Vault Sync', 'desc': 'Your study vault has been synced successfully.', 'time': '5h ago', 'icon': Icons.cloud_done, 'color': Colors.purple},
+            ];
+
+            return Container(
+              height: MediaQuery.of(context).size.height * 0.7,
+              decoration: BoxDecoration(
+                color: Theme.of(context).scaffoldBackgroundColor,
+                borderRadius: const BorderRadius.vertical(top: Radius.circular(30)),
+              ),
+              child: Column(
+                children: [
+                  const SizedBox(height: 12),
+                  Container(width: 40, height: 4, decoration: BoxDecoration(color: Theme.of(context).dividerColor, borderRadius: BorderRadius.circular(2))),
+                  Padding(
+                    padding: const EdgeInsets.all(24.0),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text('Notifications', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.onSurface)),
+                        TextButton(onPressed: () => setModalState(() => notifications.clear()), child: const Text('Clear All')),
+                      ],
+                    ),
+                  ),
+                  Expanded(
+                    child: notifications.isEmpty 
+                      ? Center(child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Icons.notifications_off_outlined, size: 64, color: Theme.of(context).disabledColor),
+                            const SizedBox(height: 16),
+                            Text('No new notifications', style: TextStyle(color: Theme.of(context).disabledColor)),
+                          ],
+                        ))
+                      : ListView.builder(
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        itemCount: notifications.length,
+                        itemBuilder: (context, index) {
+                          final item = notifications[index];
+                          return Dismissible(
+                            key: Key(item['id'].toString()),
+                            direction: DismissDirection.endToStart,
+                            onDismissed: (direction) {
+                              setModalState(() => notifications.removeAt(index));
+                            },
+                            background: Container(
+                              alignment: Alignment.centerRight,
+                              padding: const EdgeInsets.only(right: 20),
+                              decoration: BoxDecoration(color: Colors.redAccent, borderRadius: BorderRadius.circular(20)),
+                              child: const Icon(Icons.delete_outline, color: Colors.white),
+                            ),
+                            child: Padding(
+                              padding: const EdgeInsets.only(bottom: 12),
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  color: Theme.of(context).cardColor,
+                                  borderRadius: BorderRadius.circular(20),
+                                  boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 10, offset: const Offset(0, 4))],
+                                ),
+                                child: ListTile(
+                                  contentPadding: const EdgeInsets.all(16),
+                                  leading: CircleAvatar(
+                                    backgroundColor: item['color'].withOpacity(0.1),
+                                    child: Icon(item['icon'], color: item['color'], size: 20),
+                                  ),
+                                  title: Text(item['title'], style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Theme.of(context).colorScheme.onSurface)),
+                                  subtitle: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(item['desc'], style: TextStyle(fontSize: 12, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7))),
+                                      const SizedBox(height: 8),
+                                      Row(
+                                        children: [
+                                          TextButton(
+                                            onPressed: () {},
+                                            style: TextButton.styleFrom(
+                                              padding: EdgeInsets.zero,
+                                              minimumSize: const Size(50, 30),
+                                              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                            ),
+                                            child: const Text('View', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                                          ),
+                                          const SizedBox(width: 12),
+                                          TextButton(
+                                            onPressed: () => setModalState(() => notifications.removeAt(index)),
+                                            style: TextButton.styleFrom(
+                                              padding: EdgeInsets.zero,
+                                              minimumSize: const Size(50, 30),
+                                              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                              foregroundColor: Colors.redAccent,
+                                            ),
+                                            child: const Text('Delete', style: TextStyle(fontSize: 12)),
+                                          ),
+                                        ],
+                                      ),
+                                    ],
+                                  ),
+                                  trailing: Text(item['time'], style: TextStyle(fontSize: 10, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5))),
+                                ),
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                  ),
+                ],
+              ),
+            );
+          }
+        );
+      },
+    );
+  }
+
+  Widget _buildRecentItem(BuildContext context, String title, String status, IconData icon) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: Container(
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: Theme.of(context).cardColor,
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
@@ -536,10 +671,10 @@ class HomeContent extends StatelessWidget {
                 children: [
                   Text(
                     title,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontWeight: FontWeight.bold,
                       fontSize: 14,
-                      color: Color(0xFF2D3142),
+                      color: Theme.of(context).colorScheme.onSurface,
                     ),
                   ),
                   const SizedBox(height: 2),
@@ -547,7 +682,7 @@ class HomeContent extends StatelessWidget {
                     status,
                     style: TextStyle(
                       fontSize: 11,
-                      color: Colors.blueGrey.shade300,
+                      color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
                       fontWeight: FontWeight.w500,
                     ),
                   ),
