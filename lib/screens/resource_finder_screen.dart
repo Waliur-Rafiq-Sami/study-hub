@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import '../widgets/custom_card.dart';
 import '../models/subject.dart';
-import 'resource_details_screen.dart';
+import 'resource_list_screen.dart';
+import '../services/mongodb_service.dart';
 
 class ResourceFinderScreen extends StatefulWidget {
-  final String category; // 'Question', 'Note', 'Lab'
+  final String category; 
   final String? initialDept;
 
   const ResourceFinderScreen({super.key, required this.category, this.initialDept});
@@ -18,8 +19,7 @@ class _ResourceFinderScreenState extends State<ResourceFinderScreen> {
   String? selectedLevel;
   String? selectedTerm;
   String? selectedBatch;
-  String? selectedType; // CT, Mid, Semester
-  Subject? selectedSubject;
+  String? selectedType; 
 
   @override
   void initState() {
@@ -35,7 +35,6 @@ class _ResourceFinderScreenState extends State<ResourceFinderScreen> {
     {'name': 'BBA', 'icon': Icons.business_center},
     {'name': 'IPE', 'icon': Icons.precision_manufacturing},
     {'name': 'English', 'icon': Icons.translate},
-    {'name': 'GED', 'icon': Icons.history_edu},
   ];
   
   final List<String> levels = ['1', '2', '3', '4'];
@@ -44,11 +43,11 @@ class _ResourceFinderScreenState extends State<ResourceFinderScreen> {
 
   List<String> getTypes() {
     if (widget.category == 'Question') {
-      return ['CT', 'Midterm', 'Semester Final'];
+      return ['ct1', 'ct2', 'ct3', 'mid', 'final'];
     } else if (widget.category == 'Note') {
-      return ['Class Note', 'CT Question Note', 'CT Solve', 'Mid Solve', 'Semester Solve', 'Other Note'];
+      return ['class-note', 'solved-note'];
     } else {
-      return ['Lab Report', 'Software Pack', 'Lab Manual', 'Lab Solution'];
+      return ['lab-report-demo', 'lab-manual'];
     }
   }
 
@@ -57,65 +56,35 @@ class _ResourceFinderScreenState extends State<ResourceFinderScreen> {
     final types = getTypes();
     return Scaffold(
       appBar: AppBar(
-        title: Text('Search ${widget.category}s'),
+        title: Text('Find ${widget.category}s'),
+        centerTitle: true,
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.all(24),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildSectionHeader('Department', Icons.business_outlined),
+            _sectionLabel('SELECT DEPARTMENT'),
             const SizedBox(height: 16),
-            _buildDepartmentSelector(),
+            _buildDeptGrid(),
             const SizedBox(height: 32),
             
-            _buildSectionHeader('Course Details', Icons.filter_list_rounded),
+            _sectionLabel('ACADEMIC FILTERS'),
             const SizedBox(height: 16),
             Row(
               children: [
-                Expanded(child: _buildDropdown('Level', levels, selectedLevel, (v) => setState(() => selectedLevel = v))),
+                Expanded(child: _awesomeDrop('Level', levels, selectedLevel, (v) => setState(() => selectedLevel = v))),
                 const SizedBox(width: 12),
-                Expanded(child: _buildDropdown('Term', terms, selectedTerm, (v) => setState(() => selectedTerm = v))),
+                Expanded(child: _awesomeDrop('Term', terms, selectedTerm, (v) => setState(() => selectedTerm = v))),
               ],
             ),
             const SizedBox(height: 16),
-            _buildDropdown('Batch (Selection)', batches, selectedBatch, (v) => setState(() => selectedBatch = v)),
+            _awesomeDrop('Batch', batches, selectedBatch, (v) => setState(() => selectedBatch = v)),
             const SizedBox(height: 16),
-            _buildDropdown('${widget.category} Category', types, selectedType, (v) => setState(() => selectedType = v)),
-            const SizedBox(height: 32),
-            
-            _buildSectionHeader('Subject', Icons.book_outlined),
-            const SizedBox(height: 16),
-            _buildSubjectSelector(),
+            _awesomeDrop('Specific Type', types, selectedType, (v) => setState(() => selectedType = v)),
             
             const SizedBox(height: 48),
-            SizedBox(
-              width: double.infinity,
-              height: 56,
-              child: ElevatedButton(
-                onPressed: () {
-                  if (selectedSubject != null) {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => ResourceDetailsScreen(
-                          title: selectedSubject!.title,
-                          code: selectedSubject!.code,
-                          category: widget.category,
-                        ),
-                      ),
-                    );
-                  }
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Theme.of(context).primaryColor,
-                  foregroundColor: Theme.of(context).brightness == Brightness.dark ? Colors.black : Colors.white,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                  elevation: 4,
-                ),
-                child: const Text('SEARCH ASSETS', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, letterSpacing: 1.2)),
-              ),
-            ),
+            _buildSearchButton(),
             const SizedBox(height: 20),
           ],
         ),
@@ -123,63 +92,36 @@ class _ResourceFinderScreenState extends State<ResourceFinderScreen> {
     );
   }
 
-  Widget _buildSectionHeader(String title, IconData icon) {
-    return Row(
-      children: [
-        Icon(icon, size: 20, color: Theme.of(context).primaryColor),
-        const SizedBox(width: 8),
-        Text(title, style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Theme.of(context).primaryColor)),
-      ],
-    );
-  }
+  Widget _sectionLabel(String t) => Text(t, style: TextStyle(fontSize: 11, fontWeight: FontWeight.w900, color: Theme.of(context).primaryColor.withOpacity(0.6), letterSpacing: 1.2));
 
-  Widget _buildDepartmentSelector() {
+  Widget _buildDeptGrid() {
     return SizedBox(
-      height: 110,
+      height: 100,
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
         itemCount: departments.length,
         itemBuilder: (context, index) {
-          final dept = departments[index];
-          final isSelected = selectedDept == dept['name'];
+          final d = departments[index];
+          final isSelected = selectedDept == d['name'];
           return Padding(
             padding: const EdgeInsets.only(right: 16),
             child: GestureDetector(
-              onTap: () => setState(() => selectedDept = dept['name'] as String),
+              onTap: () => setState(() => selectedDept = d['name']),
               child: Column(
                 children: [
                   AnimatedContainer(
                     duration: const Duration(milliseconds: 300),
-                    width: 70,
-                    height: 70,
+                    width: 64, height: 64,
                     decoration: BoxDecoration(
                       color: isSelected ? Theme.of(context).primaryColor : Theme.of(context).cardColor,
                       shape: BoxShape.circle,
-                      border: Border.all(
-                        color: isSelected ? Theme.of(context).primaryColor : Theme.of(context).dividerColor.withOpacity(0.1),
-                        width: 2,
-                      ),
-                      boxShadow: isSelected 
-                          ? [BoxShadow(color: Theme.of(context).primaryColor.withOpacity(0.4), blurRadius: 10, offset: const Offset(0, 5))]
-                          : [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 5, offset: const Offset(0, 2))],
+                      boxShadow: isSelected ? [BoxShadow(color: Theme.of(context).primaryColor.withOpacity(0.3), blurRadius: 10, offset: const Offset(0, 4))] : [],
+                      border: Border.all(color: isSelected ? Theme.of(context).primaryColor : Colors.grey.withOpacity(0.2)),
                     ),
-                    child: Center(
-                      child: Icon(
-                        dept['icon'] as IconData,
-                        color: isSelected ? Colors.white : Theme.of(context).primaryColor,
-                        size: 30,
-                      ),
-                    ),
+                    child: Icon(d['icon'], color: isSelected ? Colors.white : Theme.of(context).primaryColor, size: 28),
                   ),
                   const SizedBox(height: 8),
-                  Text(
-                    dept['name'] as String,
-                    style: TextStyle(
-                      color: isSelected ? Theme.of(context).primaryColor : Theme.of(context).colorScheme.onSurface,
-                      fontSize: 12,
-                      fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                    ),
-                  ),
+                  Text(d['name'], style: TextStyle(fontSize: 11, fontWeight: isSelected ? FontWeight.bold : FontWeight.normal, color: isSelected ? Theme.of(context).primaryColor : Colors.grey)),
                 ],
               ),
             ),
@@ -189,95 +131,50 @@ class _ResourceFinderScreenState extends State<ResourceFinderScreen> {
     );
   }
 
-  Widget _buildDropdown(String label, List<String> items, String? value, Function(String?) onChanged) {
-    return DropdownButtonFormField<String>(
-      value: value,
-      dropdownColor: Theme.of(context).cardColor,
-      style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
-      decoration: InputDecoration(
-        labelText: label,
-        labelStyle: TextStyle(fontSize: 14, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6)),
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-        enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Theme.of(context).dividerColor.withOpacity(0.1))),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      ),
-      items: items.map((e) => DropdownMenuItem(value: e, child: Text(e))).toList(),
-      onChanged: onChanged,
-    );
-  }
-
-  Widget _buildSubjectSelector() {
-    return StudyHubCard(
-      padding: EdgeInsets.zero,
-      child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        leading: Container(
-          padding: const EdgeInsets.all(8),
-          decoration: BoxDecoration(color: Theme.of(context).primaryColor.withOpacity(0.1), borderRadius: BorderRadius.circular(8)),
-          child: Icon(Icons.class_outlined, color: Theme.of(context).primaryColor),
+  Widget _awesomeDrop(String hint, List<String> items, String? val, Function(String?) onC) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      decoration: BoxDecoration(color: Theme.of(context).cardColor, borderRadius: BorderRadius.circular(16), border: Border.all(color: Colors.grey.withOpacity(0.1))),
+      child: DropdownButtonHideUnderline(
+        child: DropdownButton<String>(
+          value: val,
+          hint: Text(hint, style: const TextStyle(fontSize: 13, color: Colors.grey)),
+          isExpanded: true,
+          items: items.map((e) => DropdownMenuItem(value: e, child: Text(e, style: const TextStyle(fontSize: 14)))).toList(),
+          onChanged: onC,
         ),
-        title: Text(selectedSubject?.title ?? 'Select Course', style: TextStyle(fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.onSurface)),
-        subtitle: Text(selectedSubject?.code ?? 'e.g. CSE-3121', style: TextStyle(fontSize: 12, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6))),
-        trailing: Icon(Icons.keyboard_arrow_down_rounded, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.4)),
-        onTap: () => _showSubjectPicker(),
       ),
     );
   }
 
-  void _showSubjectPicker() {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
-      builder: (context) {
-        return DraggableScrollableSheet(
-          initialChildSize: 0.7,
-          minChildSize: 0.5,
-          maxChildSize: 0.95,
-          expand: false,
-          builder: (context, scrollController) {
-            final filteredSubjects = mockSubjects.where((s) => selectedDept == null || s.department == selectedDept).toList();
-            return Column(
-              children: [
-                Container(
-                  width: 40,
-                  height: 4,
-                  margin: const EdgeInsets.symmetric(vertical: 12),
-                  decoration: BoxDecoration(color: Theme.of(context).dividerColor.withOpacity(0.1), borderRadius: BorderRadius.circular(2)),
-                ),
-                Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Text('Pick Academic Course', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.onSurface)),
-                ),
-                Expanded(
-                  child: ListView.builder(
-                    controller: scrollController,
-                    itemCount: filteredSubjects.length,
-                    itemBuilder: (context, index) {
-                      final s = filteredSubjects[index];
-                      return ListTile(
-                        leading: Container(
-                          padding: const EdgeInsets.all(8),
-                          decoration: BoxDecoration(color: Theme.of(context).cardColor, borderRadius: BorderRadius.circular(8)),
-                          child: Text(s.department, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 10, color: Theme.of(context).primaryColor)),
-                        ),
-                        title: Text(s.title, style: TextStyle(fontWeight: FontWeight.w600, color: Theme.of(context).colorScheme.onSurface)),
-                        subtitle: Text(s.code, style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6))),
-                        trailing: Icon(Icons.add_circle_outline, size: 20, color: Theme.of(context).primaryColor),
-                        onTap: () {
-                          setState(() => selectedSubject = s);
-                          Navigator.pop(context);
-                        },
-                      );
-                    },
-                  ),
-                ),
-              ],
-            );
-          },
-        );
-      },
+  Widget _buildSearchButton() {
+    return SizedBox(
+      width: double.infinity,
+      height: 58,
+      child: ElevatedButton(
+        onPressed: () {
+          if (selectedDept == null) {
+            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Please select a department")));
+            return;
+          }
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => ResourceListScreen(
+                department: selectedDept!,
+                category: widget.category,
+              ),
+            ),
+          );
+        },
+        style: ElevatedButton.styleFrom(
+          backgroundColor: const Color(0xFF1A237E),
+          foregroundColor: Colors.white,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          elevation: 4,
+        ),
+        child: const Text('PROCEED TO ASSETS', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, letterSpacing: 1)),
+      ),
     );
   }
 }
