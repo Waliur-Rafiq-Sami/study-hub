@@ -1,9 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'dart:developer';
+import 'screens/home_screen.dart';
 import 'screens/login_screen.dart';
 import 'services/theme_manager.dart';
+import 'services/mongodb_service.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  
+  // Direct connect
+  await MongoDBService.connect();
+
   runApp(const StudyHubApp());
 }
 
@@ -37,7 +45,7 @@ class _StudyHubAppState extends State<StudyHubApp> {
           seedColor: const Color(0xFF1A237E),
           primary: const Color(0xFF1A237E),
           secondary: const Color(0xFF0D47A1),
-          background: const Color(0xFFF8F9FE),
+          surface: const Color(0xFFF8F9FE),
         ),
         scaffoldBackgroundColor: const Color(0xFFF8F9FE),
         appBarTheme: AppBarTheme(
@@ -70,7 +78,6 @@ class _StudyHubAppState extends State<StudyHubApp> {
           background: const Color(0xFF121212),
           onPrimary: Colors.black,
           onSurface: Colors.white,
-          onBackground: Colors.white,
         ),
         scaffoldBackgroundColor: const Color(0xFF121212),
         appBarTheme: AppBarTheme(
@@ -92,7 +99,7 @@ class _StudyHubAppState extends State<StudyHubApp> {
         ),
         iconTheme: const IconThemeData(color: Colors.white70),
       ),
-      home: const LoginScreen(),
+      home: MongoDBService.currentUser != null ? const HomeScreen() : const LoginScreen(),
     );
   }
 }

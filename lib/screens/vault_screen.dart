@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../widgets/custom_card.dart';
+import '../services/mongodb_service.dart';
 import 'resource_details_screen.dart';
 
 class VaultScreen extends StatefulWidget {
@@ -9,102 +10,112 @@ class VaultScreen extends StatefulWidget {
   State<VaultScreen> createState() => _VaultScreenState();
 }
 
-class _VaultScreenState extends State<VaultScreen> with SingleTickerProviderStateMixin {
-  late TabController _tabController;
+class _VaultScreenState extends State<VaultScreen> {
+  bool _isLoading = true;
+  List<Map<String, dynamic>> _bookmarkedItems = [];
 
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 3, vsync: this);
+    _syncVault();
+  }
+
+  Future<void> _syncVault() async {
+    if (!mounted) return;
+    setState(() => _isLoading = true);
+    
+    try {
+      // 1. Get latest user data from DB to ensure local session matches DB
+      final userCol = MongoDBService.getCollection("users");
+      final userId = MongoDBService.currentUser?['_id'];
+      if (userId == null) return;
+
+      final updatedUser = await userCol.findOne(MongoDBService.where.id(MongoDBService.parseId(userId)));
+      if (updatedUser != null) {
+        await MongoDBService.saveSession(updatedUser);
+      }
+
+      final List savedCodes = MongoDBService.currentUser?['saved_resources'] ?? [];
+      
+      if (savedCodes.isEmpty) {
+        if (mounted) setState(() { _bookmarkedItems = []; _isLoading = false; });
+        return;
+      }
+
+      // 2. Fetch all resource documents for these codes
+      final resourceCol = MongoDBService.getCollection("resources");
+      final results = await resourceCol.find(MongoDBService.where.oneFrom('code', savedCodes)).toList();
+      
+      if (mounted) {
+        setState(() {
+          _bookmarkedItems = results.map((r) => MongoDBService.sanitize(r)).toList();
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) setState(() => _isLoading = false);
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         title: const Text('My Study Vault'),
         centerTitle: true,
-        bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(70),
-          child: Container(
-            margin: const EdgeInsets.fromLTRB(16, 0, 16, 12),
-            padding: const EdgeInsets.all(4),
-            decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(30),
-            ),
-            child: TabBar(
-              controller: _tabController,
-              indicator: BoxDecoration(
-                borderRadius: BorderRadius.circular(26),
-                color: Theme.of(context).brightness == Brightness.dark 
-                    ? Colors.white.withOpacity(0.2) 
-                    : Colors.white,
-                boxShadow: [
-                  if (Theme.of(context).brightness == Brightness.light)
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.1),
-                      blurRadius: 4,
-                      offset: const Offset(0, 2),
+        actions: [
+          IconButton(onPressed: _syncVault, icon: const Icon(Icons.sync_rounded)),
+        ],
+      ),
+      body: RefreshIndicator(
+        onRefresh: _syncVault,
+        child: Column(
+          children: [
+            _buildVaultHeader(),
+            Expanded(
+              child: _isLoading 
+                ? const Center(child: CircularProgressIndicator())
+                : _bookmarkedItems.isEmpty 
+                  ? _buildEmptyVault()
+                  : ListView.builder(
+                      padding: const EdgeInsets.all(20),
+                      itemCount: _bookmarkedItems.length,
+                      itemBuilder: (context, index) => _buildVaultCard(_bookmarkedItems[index]),
                     ),
-                ],
-              ),
-              labelColor: Theme.of(context).brightness == Brightness.dark 
-                  ? Colors.white 
-                  : Theme.of(context).primaryColor,
-              unselectedLabelColor: Colors.white.withOpacity(0.6),
-              labelStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 11, letterSpacing: 0.5),
-              unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.w500, fontSize: 11),
-              indicatorSize: TabBarIndicatorSize.tab,
-              tabs: const [
-                Tab(text: 'QUESTIONS'),
-                Tab(text: 'SOLVES'),
-                Tab(text: 'LAB TOOLS'),
-              ],
             ),
-          ),
+          ],
         ),
       ),
-      body: TabBarView(
-        controller: _tabController,
+    );
+  }
+
+  Widget _buildVaultHeader() {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: Theme.of(context).primaryColor,
+        borderRadius: const BorderRadius.vertical(bottom: Radius.circular(32)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildVaultList('Question'),
-          _buildVaultList('Solve'),
-          _buildVaultList('Lab'),
+          const Text('Your Private Repository', style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)),
+          const SizedBox(height: 8),
+          Text(
+            'You have ${_bookmarkedItems.length} assets saved for offline access.', 
+            style: TextStyle(color: Colors.white.withOpacity(0.7), fontSize: 13),
+          ),
         ],
       ),
     );
   }
 
-  Widget _buildVaultList(String category) {
-    // Mock data based on category
-    final items = _getMockItems(category);
+  Widget _buildVaultCard(Map<String, dynamic> item) {
+    final images = item['images'] as List?;
+    final hasImages = images != null && images.isNotEmpty;
 
-    if (items.isEmpty) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.bookmark_border_rounded, size: 64, color: Theme.of(context).disabledColor),
-            const SizedBox(height: 16),
-            Text('No $category items saved yet', 
-                 style: TextStyle(color: Theme.of(context).disabledColor, fontWeight: FontWeight.w500)),
-          ],
-        ),
-      );
-    }
-
-    return ListView.builder(
-      padding: const EdgeInsets.all(20),
-      itemCount: items.length,
-      itemBuilder: (context, index) {
-        final item = items[index];
-        return _buildProfessionalVaultCard(item);
-      },
-    );
-  }
-
-  Widget _buildProfessionalVaultCard(Map<String, dynamic> item) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 16),
       child: StudyHubCard(
@@ -113,126 +124,67 @@ class _VaultScreenState extends State<VaultScreen> with SingleTickerProviderStat
             context,
             MaterialPageRoute(
               builder: (_) => ResourceDetailsScreen(
-                title: item['title'],
-                code: item['code'],
-                category: item['type'],
+                title: item['title'] ?? 'N/A',
+                code: item['code'] ?? 'N/A',
+                category: item['category'] ?? 'General',
+                imageUrls: hasImages ? List<String>.from(images) : null,
+                fullData: item,
               ),
             ),
           );
         },
-        padding: EdgeInsets.zero,
-        child: IntrinsicHeight(
-          child: Row(
-            children: [
-              Container(
-                width: 6,
-                decoration: BoxDecoration(
-                  color: _getCategoryColor(item['type']),
-                  borderRadius: const BorderRadius.only(
-                    topLeft: Radius.circular(16),
-                    bottomLeft: Radius.circular(16),
-                  ),
-                ),
+        child: Row(
+          children: [
+            Container(
+              width: 50,
+              height: 50,
+              decoration: BoxDecoration(
+                color: Theme.of(context).primaryColor.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(10),
               ),
-              Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(10),
-                        decoration: BoxDecoration(
-                          color: _getCategoryColor(item['type']).withOpacity(0.08),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Icon(
-                          _getCategoryIcon(item['type']),
-                          color: _getCategoryColor(item['type']),
-                          size: 24,
-                        ),
-                      ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              item['title'],
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 15,
-                                color: Theme.of(context).colorScheme.onSurface,
-                              ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              '${item['code']} • ${item['info']}',
-                              style: TextStyle(
-                                fontSize: 11,
-                                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      IconButton(
-                        onPressed: () {
-                          // TODO: Implement unsave logic
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('Removed from Vault'), duration: Duration(seconds: 1)),
-                          );
-                        },
-                        icon: const Icon(Icons.remove_circle_outline_rounded, color: Colors.redAccent, size: 20),
-                      ),
-                    ],
-                  ),
-                ),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(10),
+                child: hasImages 
+                  ? Image.network(images.first, fit: BoxFit.cover)
+                  : const Icon(Icons.bookmark_rounded, color: Colors.amber),
               ),
-            ],
-          ),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(item['title'] ?? 'Untitled', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+                  Text('${item['code']} • ${item['department']}', style: TextStyle(fontSize: 11, color: Colors.grey.shade600)),
+                ],
+              ),
+            ),
+            const Icon(Icons.arrow_forward_ios_rounded, size: 14, color: Colors.grey),
+          ],
         ),
       ),
     );
   }
 
-  Color _getCategoryColor(String type) {
-    switch (type) {
-      case 'Question': return Colors.orange.shade700;
-      case 'Solve': return Colors.green.shade700;
-      case 'Lab': return Colors.blue.shade700;
-      default: return const Color(0xFF1A237E);
-    }
-  }
-
-  IconData _getCategoryIcon(String type) {
-    switch (type) {
-      case 'Question': return Icons.quiz_outlined;
-      case 'Solve': return Icons.verified_outlined;
-      case 'Lab': return Icons.terminal_outlined;
-      default: return Icons.description_outlined;
-    }
-  }
-
-  List<Map<String, dynamic>> _getMockItems(String category) {
-    if (category == 'Question') {
-      return [
-        {'title': 'Operating Systems Final Q', 'code': 'CSE-3101', 'info': 'Winter 2024', 'type': 'Question'},
-        {'title': 'Database Midterm Q', 'code': 'CSE-3121', 'info': 'Summer 2023', 'type': 'Question'},
-        {'title': 'Algorithms CT 2', 'code': 'CSE-2201', 'info': 'Batch 8th', 'type': 'Question'},
-      ];
-    } else if (category == 'Solve') {
-      return [
-        {'title': 'OS Final Verified Solve', 'code': 'CSE-3101', 'info': 'By Prof. X', 'type': 'Solve'},
-        {'title': 'Math 2101 Calculus Solve', 'code': 'MATH-2101', 'info': 'By CR', 'type': 'Solve'},
-      ];
-    } else {
-      return [
-        {'title': 'VS Code Starter Pack', 'code': 'IDE-Config', 'info': 'Setup Guide', 'type': 'Lab'},
-        {'title': 'Proteus 8.15 ZIP', 'code': 'EEE-Lab', 'info': 'Required for L-2', 'type': 'Lab'},
-      ];
-    }
+  Widget _buildEmptyVault() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(Icons.bookmark_add_outlined, size: 80, color: Colors.grey.shade300),
+          const SizedBox(height: 16),
+          const Text('Your vault is empty', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.blueGrey)),
+          const SizedBox(height: 8),
+          const Padding(
+            padding: EdgeInsets.symmetric(horizontal: 40),
+            child: Text(
+              'Save question papers and class notes to access them instantly from this screen.',
+              textAlign: TextAlign.center,
+              style: TextStyle(color: Colors.grey, fontSize: 12),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }

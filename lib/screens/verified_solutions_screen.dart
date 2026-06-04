@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../widgets/custom_card.dart';
+import '../services/mongodb_service.dart';
 import 'resource_details_screen.dart';
 
 class VerifiedSolutionsScreen extends StatefulWidget {
@@ -12,10 +13,42 @@ class VerifiedSolutionsScreen extends StatefulWidget {
 class _VerifiedSolutionsScreenState extends State<VerifiedSolutionsScreen> {
   String selectedDept = 'All';
   final List<String> departments = ['All', 'CSE', 'EEE', 'ME', 'CE', 'BBA', 'IPE'];
+  List<Map<String, dynamic>> _solves = [];
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchSolves();
+  }
+
+  Future<void> _fetchSolves() async {
+    setState(() => _isLoading = true);
+    try {
+      final collection = MongoDBService.getCollection("resources");
+      
+      var query = MongoDBService.where.eq('status', 'verified').eq('category', 'Solve');
+      if (selectedDept != 'All') {
+        query = query.eq('department', selectedDept);
+      }
+
+      final results = await collection.find(query).toList();
+
+      if (mounted) {
+        setState(() {
+          _solves = results.map((r) => MongoDBService.sanitize(r)).toList();
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         title: const Text('Verified Solutions'),
         centerTitle: true,
@@ -28,13 +61,17 @@ class _VerifiedSolutionsScreenState extends State<VerifiedSolutionsScreen> {
         children: [
           _buildDeptFilter(),
           Expanded(
-            child: ListView.builder(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-              itemCount: 8,
-              itemBuilder: (context, index) {
-                return _buildSolutionCard(index);
-              },
-            ),
+            child: _isLoading 
+              ? const Center(child: CircularProgressIndicator())
+              : _solves.isEmpty 
+                ? const Center(child: Text("No verified solutions found"))
+                : ListView.builder(
+                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                    itemCount: _solves.length,
+                    itemBuilder: (context, index) {
+                      return _buildSolutionCard(_solves[index]);
+                    },
+                  ),
           ),
         ],
       ),
@@ -49,7 +86,7 @@ class _VerifiedSolutionsScreenState extends State<VerifiedSolutionsScreen> {
           hintText: 'Search verified solves...',
           prefixIcon: const Icon(Icons.search_rounded, color: Colors.white70),
           filled: true,
-          fillColor: Colors.white.withOpacity(0.15),
+          fillColor: Colors.white.withValues(alpha: 0.15),
           border: OutlineInputBorder(borderRadius: BorderRadius.circular(30), borderSide: BorderSide.none),
           hintStyle: const TextStyle(color: Colors.white60, fontSize: 14),
         ),
@@ -74,15 +111,18 @@ class _VerifiedSolutionsScreenState extends State<VerifiedSolutionsScreen> {
             child: ChoiceChip(
               label: Text(dept),
               selected: isSelected,
-              onSelected: (val) => setState(() => selectedDept = dept),
-              selectedColor: const Color(0xFF1A237E),
+              onSelected: (val) {
+                setState(() => selectedDept = dept);
+                _fetchSolves();
+              },
+              selectedColor: Theme.of(context).primaryColor,
               labelStyle: TextStyle(
-                color: isSelected ? Colors.white : const Color(0xFF1A237E),
+                color: isSelected ? Colors.white : Theme.of(context).primaryColor,
                 fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
                 fontSize: 12,
               ),
-              backgroundColor: Colors.white,
-              side: BorderSide(color: const Color(0xFF1A237E).withOpacity(0.1)),
+              backgroundColor: Theme.of(context).cardColor,
+              side: BorderSide(color: Theme.of(context).primaryColor.withValues(alpha: 0.1)),
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
             ),
           );
@@ -91,12 +131,7 @@ class _VerifiedSolutionsScreenState extends State<VerifiedSolutionsScreen> {
     );
   }
 
-  Widget _buildSolutionCard(int index) {
-    // Mock variations
-    final titles = ['Final Question Solve', 'Midterm Solution Set', 'CT-2 Math Solve', 'Algorithm Lab Solve'];
-    final subjects = ['CSE-3121', 'EEE-2205', 'MATH-2101', 'CSE-2201'];
-    final verifiers = ['Faculty', 'CR', 'Top Contributor', 'Faculty'];
-
+  Widget _buildSolutionCard(Map<String, dynamic> res) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: StudyHubCard(
@@ -105,9 +140,11 @@ class _VerifiedSolutionsScreenState extends State<VerifiedSolutionsScreen> {
             context,
             MaterialPageRoute(
               builder: (_) => ResourceDetailsScreen(
-                title: titles[index % 4],
-                code: subjects[index % 4],
+                title: res['title'] ?? 'Untitled',
+                code: res['code'] ?? 'N/A',
                 category: 'Solve',
+                imageUrls: res['images'] != null ? List<String>.from(res['images']) : null,
+                fullData: res,
               ),
             ),
           );
@@ -118,7 +155,7 @@ class _VerifiedSolutionsScreenState extends State<VerifiedSolutionsScreen> {
             Container(
               padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
-                color: Colors.green.withOpacity(0.1),
+                color: Colors.green.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: const Icon(Icons.check_circle_rounded, color: Colors.green, size: 24),
@@ -129,26 +166,22 @@ class _VerifiedSolutionsScreenState extends State<VerifiedSolutionsScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    '${subjects[index % 4]}: ${titles[index % 4]}',
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 14,
-                      color: Theme.of(context).colorScheme.onSurface,
-                    ),
+                    res['title'] ?? 'Untitled Solve',
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Theme.of(context).colorScheme.onSurface),
                   ),
                   const SizedBox(height: 4),
                   Row(
                     children: [
                       Text(
-                        'Batch: ${8 + (index % 3)}th',
-                        style: TextStyle(fontSize: 11, color: Colors.blueGrey.shade300, fontWeight: FontWeight.w500),
+                        'Dept: ${res['department']}',
+                        style: TextStyle(fontSize: 11, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6), fontWeight: FontWeight.w500),
                       ),
                       const SizedBox(width: 8),
                       Container(width: 3, height: 3, decoration: const BoxDecoration(color: Colors.grey, shape: BoxShape.circle)),
                       const SizedBox(width: 8),
-                      Text(
-                        'Verified by ${verifiers[index % 4]}',
-                        style: const TextStyle(fontSize: 11, color: Colors.green, fontWeight: FontWeight.bold),
+                      const Text(
+                        'Verified',
+                        style: TextStyle(fontSize: 11, color: Colors.green, fontWeight: FontWeight.bold),
                       ),
                     ],
                   ),
